@@ -103,6 +103,8 @@ dependencies {
     implementation(libs.work.runtime.ktx)
     implementation(libs.coil.compose)
     implementation(libs.datastore.preferences)
+    implementation(libs.glance.appwidget)
+    implementation(libs.glance.material3)
 
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)

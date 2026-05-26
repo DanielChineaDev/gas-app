@@ -11,6 +11,8 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.bpo.gasapp.domain.repository.StationRepository
 import com.bpo.gasapp.notifications.PriceNotifier
+import androidx.glance.appwidget.updateAll
+import com.bpo.gasapp.widget.GasWidget
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import java.util.concurrent.TimeUnit
@@ -28,6 +30,7 @@ class PriceRefreshWorker @AssistedInject constructor(
         return result.fold(
             onSuccess = { drops ->
                 notifier.notifyDrops(drops)
+                GasWidget().updateAll(applicationContext)
                 Result.success()
             },
             onFailure = { Result.retry() }
