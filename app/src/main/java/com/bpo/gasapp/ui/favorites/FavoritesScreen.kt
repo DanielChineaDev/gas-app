@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,12 +29,22 @@ import com.bpo.gasapp.ui.components.StationCard
 @Composable
 fun FavoritesScreen(
     onStationClick: (String) -> Unit,
+    onCompareClick: () -> Unit,
     viewModel: FavoritesViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     Column(Modifier.fillMaxSize()) {
         FuelSelector(state.selectedFuel, viewModel::selectFuel)
+
+        if (state.favorites.isNotEmpty()) {
+            OutlinedButton(
+                onClick = onCompareClick,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)
+            ) {
+                Text("Comparar depósito lleno")
+            }
+        }
 
         if (state.favorites.isEmpty()) {
             Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {

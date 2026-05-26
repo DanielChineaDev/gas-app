@@ -24,6 +24,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.bpo.gasapp.ui.account.AccountScreen
+import com.bpo.gasapp.ui.comparator.TankComparatorScreen
 import com.bpo.gasapp.ui.detail.StationDetailRoute
 import com.bpo.gasapp.ui.detail.StationDetailScreen
 import com.bpo.gasapp.ui.favorites.FavoritesScreen
@@ -37,6 +38,7 @@ object Routes {
     const val FAVORITES = "favorites"
     const val ACCOUNT = "account"
     const val SETTINGS = "settings"
+    const val COMPARATOR = "comparator"
 }
 
 private enum class TopLevel(val route: String, val label: String, val icon: ImageVector) {
@@ -96,7 +98,8 @@ fun GasNavHost(navController: NavHostController = rememberNavController()) {
             }
             composable(Routes.FAVORITES) {
                 FavoritesScreen(
-                    onStationClick = { id -> navController.navigate(StationDetailRoute.build(id)) }
+                    onStationClick = { id -> navController.navigate(StationDetailRoute.build(id)) },
+                    onCompareClick = { navController.navigate(Routes.COMPARATOR) }
                 )
             }
             composable(Routes.ACCOUNT) {
@@ -104,6 +107,9 @@ fun GasNavHost(navController: NavHostController = rememberNavController()) {
             }
             composable(Routes.SETTINGS) {
                 SettingsScreen(onBack = { navController.popBackStack() })
+            }
+            composable(Routes.COMPARATOR) {
+                TankComparatorScreen(onBack = { navController.popBackStack() })
             }
             composable(
                 route = StationDetailRoute.PATTERN,
