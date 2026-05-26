@@ -14,11 +14,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.LocationOff
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -51,10 +52,13 @@ fun StationListScreen(
     onStationClick: (String) -> Unit,
     onAccountClick: () -> Unit,
     onSettingsClick: () -> Unit,
+    onPlannerClick: () -> Unit,
+    onSavingClick: () -> Unit,
     viewModel: StationListViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var showFilters by remember { mutableStateOf(false) }
+    var showMenu by remember { mutableStateOf(false) }
 
     val locationPermissions = rememberMultiplePermissionsState(
         listOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -74,11 +78,26 @@ fun StationListScreen(
                     IconButton(onClick = viewModel::refresh) {
                         Icon(Icons.Default.Refresh, contentDescription = "Actualizar")
                     }
-                    IconButton(onClick = onAccountClick) {
-                        Icon(Icons.Default.AccountCircle, contentDescription = "Cuenta")
+                    IconButton(onClick = { showMenu = true }) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "Más opciones")
                     }
-                    IconButton(onClick = onSettingsClick) {
-                        Icon(Icons.Default.Settings, contentDescription = "Ajustes")
+                    DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+                        DropdownMenuItem(
+                            text = { Text("Planificar ruta") },
+                            onClick = { showMenu = false; onPlannerClick() }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Modo ahorro") },
+                            onClick = { showMenu = false; onSavingClick() }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Cuenta") },
+                            onClick = { showMenu = false; onAccountClick() }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Ajustes") },
+                            onClick = { showMenu = false; onSettingsClick() }
+                        )
                     }
                 }
             )

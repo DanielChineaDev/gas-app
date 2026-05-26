@@ -29,6 +29,8 @@ import com.bpo.gasapp.ui.detail.StationDetailRoute
 import com.bpo.gasapp.ui.detail.StationDetailScreen
 import com.bpo.gasapp.ui.favorites.FavoritesScreen
 import com.bpo.gasapp.ui.map.MapScreen
+import com.bpo.gasapp.ui.planner.RoutePlannerScreen
+import com.bpo.gasapp.ui.saving.FuelSavingScreen
 import com.bpo.gasapp.ui.settings.SettingsScreen
 import com.bpo.gasapp.ui.stations.StationListScreen
 
@@ -39,6 +41,8 @@ object Routes {
     const val ACCOUNT = "account"
     const val SETTINGS = "settings"
     const val COMPARATOR = "comparator"
+    const val PLANNER = "planner"
+    const val SAVING = "saving"
 }
 
 private enum class TopLevel(val route: String, val label: String, val icon: ImageVector) {
@@ -88,7 +92,9 @@ fun GasNavHost(navController: NavHostController = rememberNavController()) {
                 StationListScreen(
                     onStationClick = { id -> navController.navigate(StationDetailRoute.build(id)) },
                     onAccountClick = { navController.navigate(Routes.ACCOUNT) },
-                    onSettingsClick = { navController.navigate(Routes.SETTINGS) }
+                    onSettingsClick = { navController.navigate(Routes.SETTINGS) },
+                    onPlannerClick = { navController.navigate(Routes.PLANNER) },
+                    onSavingClick = { navController.navigate(Routes.SAVING) }
                 )
             }
             composable(Routes.MAP) {
@@ -110,6 +116,18 @@ fun GasNavHost(navController: NavHostController = rememberNavController()) {
             }
             composable(Routes.COMPARATOR) {
                 TankComparatorScreen(onBack = { navController.popBackStack() })
+            }
+            composable(Routes.PLANNER) {
+                RoutePlannerScreen(
+                    onStationClick = { id -> navController.navigate(StationDetailRoute.build(id)) },
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable(Routes.SAVING) {
+                FuelSavingScreen(
+                    onStationClick = { id -> navController.navigate(StationDetailRoute.build(id)) },
+                    onBack = { navController.popBackStack() }
+                )
             }
             composable(
                 route = StationDetailRoute.PATTERN,
