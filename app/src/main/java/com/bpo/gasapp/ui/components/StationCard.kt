@@ -21,6 +21,10 @@ import androidx.compose.ui.unit.dp
 import com.bpo.gasapp.domain.model.FuelType
 import com.bpo.gasapp.domain.model.Station
 
+private fun formatDistance(meters: Float): String =
+    if (meters < 1000) "a ${meters.toInt()} m"
+    else "a %.1f km".format(meters / 1000f)
+
 @Composable
 fun StationCard(
     station: Station,
@@ -52,6 +56,13 @@ fun StationCard(
                     station.address.ifBlank { station.city },
                     style = MaterialTheme.typography.bodySmall
                 )
+                station.distanceMeters?.let { meters ->
+                    Text(
+                        text = formatDistance(meters),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
                 if (isCheapest) {
                     Text(
                         "Más barata",
