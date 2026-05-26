@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.LocationOff
 import androidx.compose.material.icons.filled.Refresh
@@ -47,6 +48,7 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 @Composable
 fun StationListScreen(
     onStationClick: (String) -> Unit,
+    onAccountClick: () -> Unit,
     viewModel: StationListViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -69,6 +71,9 @@ fun StationListScreen(
                     }
                     IconButton(onClick = viewModel::refresh) {
                         Icon(Icons.Default.Refresh, contentDescription = "Actualizar")
+                    }
+                    IconButton(onClick = onAccountClick) {
+                        Icon(Icons.Default.AccountCircle, contentDescription = "Cuenta")
                     }
                 }
             )

@@ -23,6 +23,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.bpo.gasapp.ui.account.AccountScreen
 import com.bpo.gasapp.ui.detail.StationDetailRoute
 import com.bpo.gasapp.ui.detail.StationDetailScreen
 import com.bpo.gasapp.ui.favorites.FavoritesScreen
@@ -33,6 +34,7 @@ object Routes {
     const val LIST = "stations"
     const val MAP = "map"
     const val FAVORITES = "favorites"
+    const val ACCOUNT = "account"
 }
 
 private enum class TopLevel(val route: String, val label: String, val icon: ImageVector) {
@@ -80,7 +82,8 @@ fun GasNavHost(navController: NavHostController = rememberNavController()) {
         ) {
             composable(Routes.LIST) {
                 StationListScreen(
-                    onStationClick = { id -> navController.navigate(StationDetailRoute.build(id)) }
+                    onStationClick = { id -> navController.navigate(StationDetailRoute.build(id)) },
+                    onAccountClick = { navController.navigate(Routes.ACCOUNT) }
                 )
             }
             composable(Routes.MAP) {
@@ -92,6 +95,9 @@ fun GasNavHost(navController: NavHostController = rememberNavController()) {
                 FavoritesScreen(
                     onStationClick = { id -> navController.navigate(StationDetailRoute.build(id)) }
                 )
+            }
+            composable(Routes.ACCOUNT) {
+                AccountScreen(onBack = { navController.popBackStack() })
             }
             composable(
                 route = StationDetailRoute.PATTERN,

@@ -5,11 +5,13 @@ import com.bpo.gasapp.data.local.StationDao
 import com.bpo.gasapp.data.local.entity.FavoriteEntity
 import com.bpo.gasapp.data.mapper.toDomain
 import com.bpo.gasapp.data.mapper.toEntity
+import com.bpo.gasapp.data.remote.FavoritesRemoteDataSource
 import com.bpo.gasapp.data.remote.FuelApi
 import com.bpo.gasapp.domain.model.Station
 import com.bpo.gasapp.domain.repository.StationRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,7 +19,8 @@ import javax.inject.Singleton
 class StationRepositoryImpl @Inject constructor(
     private val api: FuelApi,
     private val stationDao: StationDao,
-    private val favoriteDao: FavoriteDao
+    private val favoriteDao: FavoriteDao,
+    private val favoritesRemote: FavoritesRemoteDataSource
 ) : StationRepository {
 
     override fun observeStations(): Flow<List<Station>> =
@@ -49,8 +52,21 @@ class StationRepositoryImpl @Inject constructor(
     override suspend fun toggleFavorite(stationId: String) {
         if (favoriteDao.isFavorite(stationId)) {
             favoriteDao.remove(stationId)
+            favoritesRemote.remove(stationId)
         } else {
             favoriteDao.add(FavoriteEntity(stationId))
+            favoritesRemote.add(stationId)
         }
+    }
+
+    override suspend fun syncFavorites() {
+        if (!favoritesRemote.isLoggedIn()) return
+        val remoteIds = favoritesRemote.fetchRemoteIds().toHashSet()
+        val localIds = favoriteDao.observeIds().first().toHashSet()
+
+        // Upload locals missing in remote.
+        (localIds - remoteIds).forEach { favoritesRemote.add(it) }
+        // Download remotes missing in local.
+        (remoteIds - localIds).forEach { favoriteDao.add(FavoriteEntity(it)) }
     }
 }

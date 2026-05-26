@@ -17,4 +17,7 @@ interface StationRepository {
     suspend fun refresh(): Result<Unit>
 
     suspend fun toggleFavorite(stationId: String)
+
+    /** Two-way merge of local and remote favorites. No-op if not logged in. */
+    suspend fun syncFavorites()
 }
