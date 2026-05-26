@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -25,15 +26,18 @@ import androidx.navigation.navArgument
 import com.bpo.gasapp.ui.detail.StationDetailRoute
 import com.bpo.gasapp.ui.detail.StationDetailScreen
 import com.bpo.gasapp.ui.favorites.FavoritesScreen
+import com.bpo.gasapp.ui.map.MapScreen
 import com.bpo.gasapp.ui.stations.StationListScreen
 
 object Routes {
     const val LIST = "stations"
+    const val MAP = "map"
     const val FAVORITES = "favorites"
 }
 
 private enum class TopLevel(val route: String, val label: String, val icon: ImageVector) {
     LIST(Routes.LIST, "Cercanas", Icons.AutoMirrored.Filled.List),
+    MAP(Routes.MAP, "Mapa", Icons.Default.Map),
     FAVORITES(Routes.FAVORITES, "Favoritas", Icons.Default.Favorite)
 }
 
@@ -41,7 +45,7 @@ private enum class TopLevel(val route: String, val label: String, val icon: Imag
 fun GasNavHost(navController: NavHostController = rememberNavController()) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
-    val showBottomBar = currentRoute == Routes.LIST || currentRoute == Routes.FAVORITES
+    val showBottomBar = TopLevel.entries.any { it.route == currentRoute }
 
     Scaffold(
         bottomBar = {
@@ -76,6 +80,11 @@ fun GasNavHost(navController: NavHostController = rememberNavController()) {
         ) {
             composable(Routes.LIST) {
                 StationListScreen(
+                    onStationClick = { id -> navController.navigate(StationDetailRoute.build(id)) }
+                )
+            }
+            composable(Routes.MAP) {
+                MapScreen(
                     onStationClick = { id -> navController.navigate(StationDetailRoute.build(id)) }
                 )
             }
