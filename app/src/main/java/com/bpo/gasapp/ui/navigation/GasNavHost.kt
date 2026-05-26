@@ -1,33 +1,95 @@
 package com.bpo.gasapp.ui.navigation
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.bpo.gasapp.ui.detail.StationDetailRoute
 import com.bpo.gasapp.ui.detail.StationDetailScreen
+import com.bpo.gasapp.ui.favorites.FavoritesScreen
 import com.bpo.gasapp.ui.stations.StationListScreen
 
 object Routes {
     const val LIST = "stations"
+    const val FAVORITES = "favorites"
+}
+
+private enum class TopLevel(val route: String, val label: String, val icon: ImageVector) {
+    LIST(Routes.LIST, "Cercanas", Icons.AutoMirrored.Filled.List),
+    FAVORITES(Routes.FAVORITES, "Favoritas", Icons.Default.Favorite)
 }
 
 @Composable
 fun GasNavHost(navController: NavHostController = rememberNavController()) {
-    NavHost(navController = navController, startDestination = Routes.LIST) {
-        composable(Routes.LIST) {
-            StationListScreen(
-                onStationClick = { id -> navController.navigate(StationDetailRoute.build(id)) }
-            )
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = backStackEntry?.destination?.route
+    val showBottomBar = currentRoute == Routes.LIST || currentRoute == Routes.FAVORITES
+
+    Scaffold(
+        bottomBar = {
+            if (showBottomBar) {
+                NavigationBar {
+                    TopLevel.entries.forEach { item ->
+                        val selected = backStackEntry?.destination?.hierarchy
+                            ?.any { it.route == item.route } == true
+                        NavigationBarItem(
+                            selected = selected,
+                            onClick = {
+                                navController.navigate(item.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            },
+                            icon = { Icon(item.icon, contentDescription = item.label) },
+                            label = { Text(item.label) }
+                        )
+                    }
+                }
+            }
         }
-        composable(
-            route = StationDetailRoute.PATTERN,
-            arguments = listOf(navArgument(StationDetailRoute.ARG_ID) { type = NavType.StringType })
+    ) { padding ->
+        NavHost(
+            navController = navController,
+            startDestination = Routes.LIST,
+            modifier = Modifier.padding(padding)
         ) {
-            StationDetailScreen(onBack = { navController.popBackStack() })
+            composable(Routes.LIST) {
+                StationListScreen(
+                    onStationClick = { id -> navController.navigate(StationDetailRoute.build(id)) }
+                )
+            }
+            composable(Routes.FAVORITES) {
+                FavoritesScreen(
+                    onStationClick = { id -> navController.navigate(StationDetailRoute.build(id)) }
+                )
+            }
+            composable(
+                route = StationDetailRoute.PATTERN,
+                arguments = listOf(navArgument(StationDetailRoute.ARG_ID) { type = NavType.StringType })
+            ) {
+                StationDetailScreen(onBack = { navController.popBackStack() })
+            }
         }
     }
 }
