@@ -1,5 +1,6 @@
 package com.bpo.gasapp.domain.repository
 
+import com.bpo.gasapp.domain.model.PriceDrop
 import com.bpo.gasapp.domain.model.Station
 import kotlinx.coroutines.flow.Flow
 
@@ -15,6 +16,12 @@ interface StationRepository {
 
     /** Fetches fresh data from the official API and replaces the local cache. */
     suspend fun refresh(): Result<Unit>
+
+    /**
+     * Same as [refresh] but returns the price drops detected on the user's
+     * favorite stations (new price < old cached price).
+     */
+    suspend fun refreshAndDetectFavoriteDrops(): Result<List<PriceDrop>>
 
     suspend fun toggleFavorite(stationId: String)
 

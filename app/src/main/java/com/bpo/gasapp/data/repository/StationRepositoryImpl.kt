@@ -7,6 +7,7 @@ import com.bpo.gasapp.data.mapper.toDomain
 import com.bpo.gasapp.data.mapper.toEntity
 import com.bpo.gasapp.data.remote.FavoritesRemoteDataSource
 import com.bpo.gasapp.data.remote.FuelApi
+import com.bpo.gasapp.domain.model.PriceDrop
 import com.bpo.gasapp.domain.model.Station
 import com.bpo.gasapp.domain.repository.StationRepository
 import kotlinx.coroutines.flow.Flow
@@ -40,13 +41,31 @@ class StationRepositoryImpl @Inject constructor(
         return entity.toDomain(isFavorite = favoriteDao.isFavorite(id))
     }
 
-    override suspend fun refresh(): Result<Unit> = runCatching {
+    override suspend fun refresh(): Result<Unit> =
+        refreshAndDetectFavoriteDrops().map { }
+
+    override suspend fun refreshAndDetectFavoriteDrops(): Result<List<PriceDrop>> = runCatching {
+        val favoriteIds = favoriteDao.observeIds().first().toSet()
+        val oldFavorites = favoriteIds.associateWith { id -> stationDao.getById(id)?.toDomain() }
+
         val response = api.getAllStations()
         val now = System.currentTimeMillis()
         val entities = response.estaciones.mapNotNull { it.toEntity(now) }
-        if (entities.isNotEmpty()) {
-            stationDao.replaceAll(entities)
+        if (entities.isEmpty()) return@runCatching emptyList()
+        stationDao.replaceAll(entities)
+
+        val drops = mutableListOf<PriceDrop>()
+        favoriteIds.forEach { id ->
+            val old = oldFavorites[id] ?: return@forEach
+            val updated = stationDao.getById(id)?.toDomain() ?: return@forEach
+            updated.prices.forEach { (fuel, newPrice) ->
+                val oldPrice = old.priceOf(fuel)
+                if (oldPrice != null && newPrice < oldPrice) {
+                    drops += PriceDrop(id, updated.name, fuel, oldPrice, newPrice)
+                }
+            }
         }
+        drops
     }
 
     override suspend fun toggleFavorite(stationId: String) {
