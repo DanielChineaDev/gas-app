@@ -2,6 +2,7 @@ package com.bpo.gasapp.ui.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bpo.gasapp.data.remote.ProfileRemoteDataSource
 import com.bpo.gasapp.data.settings.SettingsRepository
 import com.bpo.gasapp.domain.model.AppSettings
 import com.bpo.gasapp.domain.model.FuelType
@@ -15,7 +16,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val repository: SettingsRepository
+    private val repository: SettingsRepository,
+    private val profileRemote: ProfileRemoteDataSource
 ) : ViewModel() {
 
     val settings: StateFlow<AppSettings> = repository.settings.stateIn(
@@ -29,6 +31,9 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun setDefaultFuel(fuel: FuelType) {
-        viewModelScope.launch { repository.setDefaultFuel(fuel) }
+        viewModelScope.launch {
+            repository.setDefaultFuel(fuel)
+            profileRemote.setDefaultFuel(fuel)
+        }
     }
 }
