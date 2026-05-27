@@ -1,3 +1,10 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
+
     <style name="Theme.GasApp" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.GasApp.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/brand_green</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.GasApp</item>
+    </style>
 </resources>
