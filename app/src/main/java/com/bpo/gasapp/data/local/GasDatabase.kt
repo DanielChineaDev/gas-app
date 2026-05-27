@@ -17,7 +17,7 @@ import com.bpo.gasapp.data.local.entity.VehicleEntity
         VehicleEntity::class
     ],
     version = 5,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class GasDatabase : RoomDatabase() {
     abstract fun stationDao(): StationDao

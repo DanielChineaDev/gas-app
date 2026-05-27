@@ -23,7 +23,8 @@ object DatabaseModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): GasDatabase =
         Room.databaseBuilder(context, GasDatabase::class.java, GasDatabase.NAME)
-            .fallbackToDestructiveMigration()
+            .addMigrations(*com.bpo.gasapp.data.local.ALL_MIGRATIONS)
+            .fallbackToDestructiveMigrationOnDowngrade()
             .build()
 
     @Provides
