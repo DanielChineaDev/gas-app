@@ -53,4 +53,8 @@ class SettingsViewModel @Inject constructor(
             profileRemote.setDefaultFuel(fuel)
         }
     }
+
+    fun setDynamicColor(enabled: Boolean) {
+        viewModelScope.launch { repository.setDynamicColor(enabled) }
+    }
 }

@@ -43,7 +43,7 @@ class MainActivity : ComponentActivity() {
                 ThemeMode.DARK -> true
             }
 
-            GasAppTheme(darkTheme = darkTheme) {
+            GasAppTheme(darkTheme = darkTheme, dynamicColor = settings.dynamicColor) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     val launcher = rememberLauncherForActivityResult(
                         ActivityResultContracts.RequestPermission()

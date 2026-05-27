@@ -23,7 +23,8 @@ class SettingsRepository @Inject constructor(
                 ?: ThemeMode.SYSTEM,
             defaultFuel = prefs[KEY_FUEL]?.let { runCatching { FuelType.valueOf(it) }.getOrNull() }
                 ?: FuelType.GASOLINA_95,
-            onboardingDone = prefs[KEY_ONBOARDING] ?: false
+            onboardingDone = prefs[KEY_ONBOARDING] ?: false,
+            dynamicColor = prefs[KEY_DYNAMIC] ?: true
         )
     }
 
@@ -39,9 +40,14 @@ class SettingsRepository @Inject constructor(
         dataStore.edit { it[KEY_ONBOARDING] = done }
     }
 
+    suspend fun setDynamicColor(enabled: Boolean) {
+        dataStore.edit { it[KEY_DYNAMIC] = enabled }
+    }
+
     private companion object {
         val KEY_THEME = stringPreferencesKey("theme_mode")
         val KEY_FUEL = stringPreferencesKey("default_fuel")
         val KEY_ONBOARDING = booleanPreferencesKey("onboarding_done")
+        val KEY_DYNAMIC = booleanPreferencesKey("dynamic_color")
     }
 }
