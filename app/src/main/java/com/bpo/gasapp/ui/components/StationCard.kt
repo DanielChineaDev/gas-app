@@ -27,6 +27,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.bpo.gasapp.domain.model.FuelType
@@ -43,6 +44,7 @@ fun StationCard(
     onClick: () -> Unit,
     onFavorite: () -> Unit,
     isCheapest: Boolean = false,
+    zoneAverage: Double? = null,
     modifier: Modifier = Modifier
 ) {
     val price = station.priceOf(fuel)
@@ -99,7 +101,7 @@ fun StationCard(
                 }
             }
 
-            PricePill(price)
+            PricePill(price, zoneAverage)
 
             val favScale by animateFloatAsState(
                 targetValue = if (station.isFavorite) 1.15f else 1f,
@@ -120,12 +122,21 @@ fun StationCard(
     }
 }
 
+private val PriceCheap = Color(0xFF2E7D32)
+private val PriceMid = Color(0xFFF59E0B)
+private val PriceExpensive = Color(0xFFD32F2F)
+
 @Composable
-private fun PricePill(price: Double?) {
-    val container = if (price != null) MaterialTheme.colorScheme.primary
-    else MaterialTheme.colorScheme.surfaceVariant
-    val content = if (price != null) MaterialTheme.colorScheme.onPrimary
-    else MaterialTheme.colorScheme.onSurfaceVariant
+private fun PricePill(price: Double?, zoneAverage: Double?) {
+    val heat = when {
+        price == null -> null
+        zoneAverage == null -> MaterialTheme.colorScheme.primary
+        price <= zoneAverage * 0.99 -> PriceCheap
+        price >= zoneAverage * 1.01 -> PriceExpensive
+        else -> PriceMid
+    }
+    val container = heat ?: MaterialTheme.colorScheme.surfaceVariant
+    val content = if (heat != null) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
 
     Column(
         modifier = Modifier

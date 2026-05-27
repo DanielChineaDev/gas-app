@@ -30,6 +30,7 @@ data class StationListUiState(
     val filters: StationFilters = StationFilters(),
     val searchQuery: String = "",
     val availableBrands: List<String> = emptyList(),
+    val zoneAverage: Double? = null,
     val hasLocation: Boolean = false,
     val isRefreshing: Boolean = false,
     val error: String? = null
@@ -96,13 +97,26 @@ class StationListViewModel @Inject constructor(
                 brandOk && distanceOk && openOk && searchOk
             }
 
-            val sorted = filtered.sortedWith(compareBy(nullsLast()) { it.priceOf(filters.fuel) })
+            val sorted = when (filters.sortMode) {
+                com.bpo.gasapp.domain.model.SortMode.PRICE ->
+                    filtered.sortedWith(compareBy(nullsLast()) { it.priceOf(filters.fuel) })
+                com.bpo.gasapp.domain.model.SortMode.DISTANCE ->
+                    filtered.sortedWith(compareBy(nullsLast()) { it.distanceMeters })
+                com.bpo.gasapp.domain.model.SortMode.VALUE ->
+                    filtered.sortedWith(compareBy(nullsLast()) { s ->
+                        s.priceOf(filters.fuel)?.plus((s.distanceMeters ?: 0f) / 1000.0 * 0.003)
+                    })
+            }
+
+            val prices = filtered.mapNotNull { it.priceOf(filters.fuel) }
+            val zoneAverage = if (prices.isNotEmpty()) prices.average() else null
 
             StationListUiState(
                 stations = sorted,
                 filters = filters,
                 searchQuery = query,
                 availableBrands = stations.map { it.brand }.distinct().sorted(),
+                zoneAverage = zoneAverage,
                 hasLocation = userLocation != null,
                 isRefreshing = refreshing,
                 error = err
@@ -133,6 +147,10 @@ class StationListViewModel @Inject constructor(
 
     fun setSearchQuery(query: String) {
         searchQuery.value = query
+    }
+
+    fun setSortMode(mode: com.bpo.gasapp.domain.model.SortMode) {
+        filters.value = filters.value.copy(sortMode = mode)
     }
 
     fun refreshLocation() {

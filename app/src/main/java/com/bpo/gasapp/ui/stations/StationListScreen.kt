@@ -124,6 +124,11 @@ fun StationListScreen(
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
             SearchBar(query = state.searchQuery, onQueryChange = viewModel::setSearchQuery)
             FuelSelector(state.filters.fuel, viewModel::selectFuel)
+            SortAndAverageBar(
+                sortMode = state.filters.sortMode,
+                zoneAverage = state.zoneAverage,
+                onSortChange = viewModel::setSortMode
+            )
 
             androidx.compose.animation.AnimatedVisibility(visible = !state.hasLocation) {
                 LocationBanner(onEnable = { locationPermissions.launchMultiplePermissionRequest() })
@@ -148,6 +153,7 @@ fun StationListScreen(
                             station = station,
                             fuel = state.filters.fuel,
                             isCheapest = index == 0 && station.priceOf(state.filters.fuel) != null,
+                            zoneAverage = state.zoneAverage,
                             onClick = { onStationClick(station.id) },
                             onFavorite = { viewModel.toggleFavorite(station.id) },
                             modifier = Modifier.animateItem()
@@ -185,6 +191,35 @@ fun StationListScreen(
             onChange = viewModel::updateFilters,
             onDismiss = { showFilters = false }
         )
+    }
+}
+
+@Composable
+private fun SortAndAverageBar(
+    sortMode: com.bpo.gasapp.domain.model.SortMode,
+    zoneAverage: Double?,
+    onSortChange: (com.bpo.gasapp.domain.model.SortMode) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        com.bpo.gasapp.domain.model.SortMode.entries.forEach { mode ->
+            FilterChip(
+                selected = sortMode == mode,
+                onClick = { onSortChange(mode) },
+                label = { Text(mode.label) }
+            )
+        }
+        if (zoneAverage != null) {
+            androidx.compose.foundation.layout.Spacer(Modifier.weight(1f))
+            Text(
+                "Media: %.3f €".format(zoneAverage),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
 
