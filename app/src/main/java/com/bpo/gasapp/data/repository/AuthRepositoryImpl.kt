@@ -39,4 +39,4 @@ class AuthRepositoryImpl @Inject constructor(
     override fun logout() = auth.signOut()
 }
 
-private fun FirebaseUser.toAuthUser() = AuthUser(uid = uid, email = email)
+private fun FirebaseUser.toAuthUser() = AuthUser(uid = uid, email = email, displayName = displayName)

@@ -1,20 +1,30 @@
 package com.bpo.gasapp.ui.navigation
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -65,6 +75,9 @@ fun GasNavHost(navController: NavHostController = rememberNavController()) {
     val currentRoute = backStackEntry?.destination?.route
     val showBottomBar = TopLevel.entries.any { it.route == currentRoute }
 
+    val accountViewModel: com.bpo.gasapp.ui.account.AccountViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+    val user by accountViewModel.user.collectAsStateWithLifecycle()
+
     Scaffold(
         bottomBar = {
             if (showBottomBar) {
@@ -83,7 +96,13 @@ fun GasNavHost(navController: NavHostController = rememberNavController()) {
                                     restoreState = true
                                 }
                             },
-                            icon = { Icon(item.icon, contentDescription = item.label) },
+                            icon = {
+                                if (item == TopLevel.PROFILE && user != null) {
+                                    NavAvatar(user?.displayName?.ifBlank { user?.email } ?: user?.email)
+                                } else {
+                                    Icon(item.icon, contentDescription = item.label)
+                                }
+                            },
                             label = { Text(item.label) }
                         )
                     }
@@ -174,5 +193,23 @@ fun GasNavHost(navController: NavHostController = rememberNavController()) {
                 StationDetailScreen(onBack = { navController.popBackStack() })
             }
         }
+    }
+}
+
+@Composable
+private fun NavAvatar(label: String?) {
+    Box(
+        modifier = Modifier
+            .size(26.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.primary),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = (label?.take(1) ?: "U").uppercase(),
+            color = MaterialTheme.colorScheme.onPrimary,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold
+        )
     }
 }

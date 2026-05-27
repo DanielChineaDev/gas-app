@@ -54,7 +54,10 @@ fun ProfileScreen(
     val user by viewModel.user.collectAsStateWithLifecycle()
     val favoritesCount by viewModel.favoritesCount.collectAsStateWithLifecycle()
 
-    Scaffold(topBar = { TopAppBar(title = { Text("Perfil") }) }) { padding ->
+    Scaffold(
+        contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
+        topBar = { TopAppBar(title = { Text("Perfil") }) }
+    ) { padding ->
         Column(
             modifier = Modifier
                 .padding(padding)
