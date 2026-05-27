@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -62,6 +64,8 @@ fun MapScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
+    var selectedStationId by remember { mutableStateOf<String?>(null) }
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     val locationPermissions = rememberMultiplePermissionsState(
         listOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -110,7 +114,7 @@ fun MapScreen(
             Clustering(
                 items = clusterItems,
                 onClusterItemClick = { item ->
-                    onStationClick(item.station.id)
+                    selectedStationId = item.station.id
                     true
                 },
                 clusterContent = { cluster -> ClusterBubble(cluster.size) },
@@ -170,6 +174,97 @@ fun MapScreen(
             modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)
         ) {
             Icon(Icons.Default.MyLocation, contentDescription = "Centrar en mi ubicación")
+        }
+    }
+
+    val selected = state.stations.firstOrNull { it.id == selectedStationId }
+    if (selected != null) {
+        StationSheet(
+            station = selected,
+            fuel = state.selectedFuel,
+            onDismiss = { selectedStationId = null },
+            onDetail = {
+                val id = selected.id
+                selectedStationId = null
+                onStationClick(id)
+            },
+            onFavorite = { viewModel.toggleFavorite(selected.id) },
+            onNavigate = {
+                val uri = android.net.Uri.parse("google.navigation:q=${selected.latitude},${selected.longitude}")
+                val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, uri)
+                    .apply { setPackage("com.google.android.apps.maps") }
+                runCatching { context.startActivity(intent) }.onFailure {
+                    context.startActivity(
+                        android.content.Intent(
+                            android.content.Intent.ACTION_VIEW,
+                            android.net.Uri.parse("geo:${selected.latitude},${selected.longitude}")
+                        )
+                    )
+                }
+            }
+        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun StationSheet(
+    station: com.bpo.gasapp.domain.model.Station,
+    fuel: FuelType,
+    onDismiss: () -> Unit,
+    onDetail: () -> Unit,
+    onFavorite: () -> Unit,
+    onNavigate: () -> Unit
+) {
+    androidx.compose.material3.ModalBottomSheet(onDismissRequest = onDismiss) {
+        androidx.compose.foundation.layout.Column(
+            modifier = androidx.compose.ui.Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp)
+                .padding(bottom = 28.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            androidx.compose.foundation.layout.Row(
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                com.bpo.gasapp.ui.components.BrandAvatar(brand = station.brand)
+                androidx.compose.foundation.layout.Column(modifier = androidx.compose.ui.Modifier.weight(1f)) {
+                    Text(
+                        station.brand,
+                        style = androidx.compose.material3.MaterialTheme.typography.titleLarge,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                    )
+                    Text(
+                        station.address.ifBlank { station.city },
+                        style = androidx.compose.material3.MaterialTheme.typography.bodySmall
+                    )
+                }
+                androidx.compose.material3.IconButton(onClick = onFavorite) {
+                    Icon(
+                        imageVector = if (station.isFavorite) androidx.compose.material.icons.Icons.Default.Favorite
+                        else androidx.compose.material.icons.Icons.Default.FavoriteBorder,
+                        contentDescription = "Favorito"
+                    )
+                }
+            }
+            Text(
+                text = station.priceOf(fuel)?.let { "${fuel.label}: %.3f €/L".format(it) }
+                    ?: "${fuel.label}: no disponible",
+                style = androidx.compose.material3.MaterialTheme.typography.titleMedium,
+                color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+            )
+            androidx.compose.foundation.layout.Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                androidx.compose.material3.OutlinedButton(
+                    onClick = onDetail,
+                    modifier = androidx.compose.ui.Modifier.weight(1f)
+                ) { Text("Ver detalle") }
+                androidx.compose.material3.Button(
+                    onClick = onNavigate,
+                    modifier = androidx.compose.ui.Modifier.weight(1f)
+                ) { Text("Ir") }
+            }
         }
     }
 }

@@ -57,4 +57,8 @@ class MapViewModel @Inject constructor(
     fun refreshLocation() {
         viewModelScope.launch { userLocation.value = locationProvider.currentLocation() }
     }
+
+    fun toggleFavorite(stationId: String) {
+        viewModelScope.launch { repository.toggleFavorite(stationId) }
+    }
 }
