@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -20,6 +21,8 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
@@ -33,6 +36,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -51,6 +55,7 @@ fun StationDetailScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val history by viewModel.history.collectAsStateWithLifecycle()
+    val reviews by viewModel.reviews.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     Scaffold(
@@ -92,6 +97,9 @@ fun StationDetailScreen(
                 else -> StationDetailContent(
                     station = state.station!!,
                     history = history,
+                    reviews = reviews,
+                    canReview = viewModel.canReview,
+                    onSubmitReview = viewModel::submitReview,
                     onNavigate = { launchNavigation(context, state.station!!) }
                 )
             }
@@ -103,6 +111,9 @@ fun StationDetailScreen(
 private fun StationDetailContent(
     station: Station,
     history: List<com.bpo.gasapp.domain.model.PricePoint>,
+    reviews: List<com.bpo.gasapp.domain.model.Review>,
+    canReview: Boolean,
+    onSubmitReview: (Int, String) -> Unit,
     onNavigate: () -> Unit
 ) {
     Column(
@@ -140,11 +151,76 @@ private fun StationDetailContent(
             }
         }
 
+        Card(Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                val avg = if (reviews.isNotEmpty()) reviews.map { it.rating }.average() else null
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("Reseñas", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    if (avg != null) {
+                        Text(
+                            "  ★ %.1f (${reviews.size})".format(avg),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                }
+                if (canReview) {
+                    ReviewInput(onSubmit = onSubmitReview)
+                } else {
+                    Text(
+                        "Inicia sesión para dejar una reseña.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                reviews.forEach { review ->
+                    Column(Modifier.padding(top = 8.dp)) {
+                        Text(
+                            "${"★".repeat(review.rating)}${"☆".repeat(5 - review.rating)}  ${review.userName}",
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                        if (review.comment.isNotBlank()) {
+                            Text(review.comment, style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
+                }
+            }
+        }
+
         Button(onClick = onNavigate, modifier = Modifier.fillMaxWidth()) {
             Icon(Icons.Default.Navigation, contentDescription = null)
             Text("  Ir allí")
         }
     }
+}
+
+@Composable
+private fun ReviewInput(onSubmit: (Int, String) -> Unit) {
+    var rating by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(0) }
+    var comment by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf("") }
+
+    Row {
+        (1..5).forEach { star ->
+            IconButton(onClick = { rating = star }, modifier = Modifier.size(36.dp)) {
+                Icon(
+                    imageVector = if (star <= rating) Icons.Default.Star else Icons.Default.StarBorder,
+                    contentDescription = "$star estrellas",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+    }
+    androidx.compose.material3.OutlinedTextField(
+        value = comment,
+        onValueChange = { comment = it },
+        label = { Text("Tu comentario (opcional)") },
+        modifier = Modifier.fillMaxWidth()
+    )
+    Button(
+        onClick = { onSubmit(rating, comment) },
+        enabled = rating > 0,
+        modifier = Modifier.fillMaxWidth()
+    ) { Text("Publicar reseña") }
 }
 
 @Composable
