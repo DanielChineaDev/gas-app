@@ -36,6 +36,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,9 +47,33 @@ fun AccountScreen(
 ) {
     val user by viewModel.user.collectAsStateWithLifecycle()
     val form by viewModel.form.collectAsStateWithLifecycle()
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
 
     LaunchedEffect(user) {
         if (user != null) onLoggedIn()
+    }
+
+    val onGoogleClick: () -> Unit = {
+        val webClientId = com.bpo.gasapp.BuildConfig.WEB_CLIENT_ID
+        if (webClientId.isBlank()) {
+            viewModel.googleSignInFailed()
+        } else {
+            scope.launch {
+                runCatching {
+                    val credentialManager = androidx.credentials.CredentialManager.create(context)
+                    val googleOption = com.google.android.libraries.identity.googleid
+                        .GetSignInWithGoogleOption.Builder(webClientId).build()
+                    val request = androidx.credentials.GetCredentialRequest.Builder()
+                        .addCredentialOption(googleOption)
+                        .build()
+                    val result = credentialManager.getCredential(context, request)
+                    com.google.android.libraries.identity.googleid
+                        .GoogleIdTokenCredential.createFrom(result.credential.data).idToken
+                }.onSuccess { viewModel.loginWithGoogle(it) }
+                    .onFailure { viewModel.googleSignInFailed() }
+            }
+        }
     }
 
     Scaffold(
@@ -72,7 +97,8 @@ fun AccountScreen(
                 isLoading = form.isLoading,
                 error = form.error,
                 onSubmit = viewModel::submit,
-                onToggleMode = viewModel::toggleMode
+                onToggleMode = viewModel::toggleMode,
+                onGoogleClick = onGoogleClick
             )
         }
     }
@@ -84,7 +110,8 @@ private fun ColumnScope.AuthForm(
     isLoading: Boolean,
     error: String?,
     onSubmit: (String, String) -> Unit,
-    onToggleMode: () -> Unit
+    onToggleMode: () -> Unit,
+    onGoogleClick: () -> Unit
 ) {
     var email by rememberSaveable { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -141,5 +168,15 @@ private fun ColumnScope.AuthForm(
             if (isRegisterMode) "¿Ya tienes cuenta? Inicia sesión"
             else "¿No tienes cuenta? Regístrate"
         )
+    }
+
+    androidx.compose.material3.HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+    androidx.compose.material3.OutlinedButton(
+        onClick = onGoogleClick,
+        enabled = !isLoading,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text("Continuar con Google")
     }
 }

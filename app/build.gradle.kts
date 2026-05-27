@@ -15,6 +15,7 @@ val localProperties = Properties().apply {
     if (f.exists()) f.inputStream().use { load(it) }
 }
 val mapsApiKey: String = localProperties.getProperty("MAPS_API_KEY") ?: ""
+val webClientId: String = localProperties.getProperty("WEB_CLIENT_ID") ?: ""
 
 android {
     namespace = "com.bpo.gasapp"
@@ -31,6 +32,7 @@ android {
 
         manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
         buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
+        buildConfigField("String", "WEB_CLIENT_ID", "\"$webClientId\"")
     }
 
     buildTypes {
@@ -108,6 +110,9 @@ dependencies {
     implementation(libs.glance.appwidget)
     implementation(libs.glance.material3)
     implementation(libs.mlkit.text.recognition)
+    implementation(libs.credentials)
+    implementation(libs.credentials.play.services)
+    implementation(libs.googleid)
 
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
