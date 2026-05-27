@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.bpo.gasapp.data.local.FavoriteDao
 import com.bpo.gasapp.data.local.GasDatabase
 import com.bpo.gasapp.data.local.PriceHistoryDao
+import com.bpo.gasapp.data.local.RefuelDao
 import com.bpo.gasapp.data.local.StationDao
 import dagger.Module
 import dagger.Provides
@@ -32,4 +33,7 @@ object DatabaseModule {
 
     @Provides
     fun providePriceHistoryDao(db: GasDatabase): PriceHistoryDao = db.priceHistoryDao()
+
+    @Provides
+    fun provideRefuelDao(db: GasDatabase): RefuelDao = db.refuelDao()
 }

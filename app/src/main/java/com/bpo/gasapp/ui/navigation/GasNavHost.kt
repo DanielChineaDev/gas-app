@@ -30,8 +30,11 @@ import com.bpo.gasapp.ui.detail.StationDetailScreen
 import com.bpo.gasapp.ui.favorites.FavoritesScreen
 import com.bpo.gasapp.ui.map.MapScreen
 import com.bpo.gasapp.ui.planner.RoutePlannerScreen
+import com.bpo.gasapp.ui.refuel.RefuelLogRoute
+import com.bpo.gasapp.ui.refuel.RefuelLogScreen
 import com.bpo.gasapp.ui.saving.FuelSavingScreen
 import com.bpo.gasapp.ui.settings.SettingsScreen
+import com.bpo.gasapp.ui.stats.StatsScreen
 import com.bpo.gasapp.ui.stations.StationListScreen
 
 object Routes {
@@ -129,6 +132,25 @@ fun GasNavHost(navController: NavHostController = rememberNavController()) {
                 FuelSavingScreen(
                     onStationClick = { id -> navController.navigate(StationDetailRoute.build(id)) },
                     onBack = { navController.popBackStack() }
+                )
+            }
+            composable(Routes.STATS) {
+                StatsScreen(
+                    onBack = { navController.popBackStack() },
+                    onAddRefuel = { navController.navigate(RefuelLogRoute.build()) }
+                )
+            }
+            composable(
+                route = RefuelLogRoute.PATTERN,
+                arguments = listOf(
+                    navArgument(RefuelLogRoute.ARG_STATION_ID) { type = NavType.StringType; defaultValue = "" },
+                    navArgument(RefuelLogRoute.ARG_STATION_NAME) { type = NavType.StringType; defaultValue = "" },
+                    navArgument(RefuelLogRoute.ARG_FUEL) { type = NavType.StringType; defaultValue = "" }
+                )
+            ) {
+                RefuelLogScreen(
+                    onBack = { navController.popBackStack() },
+                    onSaved = { navController.popBackStack() }
                 )
             }
             composable(

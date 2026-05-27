@@ -1,8 +1,10 @@
 package com.bpo.gasapp.di
 
 import com.bpo.gasapp.data.repository.AuthRepositoryImpl
+import com.bpo.gasapp.data.repository.RefuelRepositoryImpl
 import com.bpo.gasapp.data.repository.StationRepositoryImpl
 import com.bpo.gasapp.domain.repository.AuthRepository
+import com.bpo.gasapp.domain.repository.RefuelRepository
 import com.bpo.gasapp.domain.repository.StationRepository
 import dagger.Binds
 import dagger.Module
@@ -21,4 +23,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindAuthRepository(impl: AuthRepositoryImpl): AuthRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindRefuelRepository(impl: RefuelRepositoryImpl): RefuelRepository
 }
