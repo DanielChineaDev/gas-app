@@ -36,6 +36,21 @@ class AuthRepositoryImpl @Inject constructor(
         result.user?.toAuthUser() ?: error("Usuario nulo tras el inicio de sesión")
     }
 
+    override suspend fun loginWithGoogle(idToken: String): Result<AuthUser> = runCatching {
+        val credential = com.google.firebase.auth.GoogleAuthProvider.getCredential(idToken, null)
+        val result = auth.signInWithCredential(credential).await()
+        result.user?.toAuthUser() ?: error("Usuario nulo tras el inicio con Google")
+    }
+
+    override suspend fun updateDisplayName(name: String): Result<Unit> = runCatching {
+        val user = auth.currentUser ?: error("No hay sesión activa")
+        val request = com.google.firebase.auth.UserProfileChangeRequest.Builder()
+            .setDisplayName(name.trim())
+            .build()
+        user.updateProfile(request).await()
+        user.reload().await()
+    }
+
     override fun logout() = auth.signOut()
 }
 

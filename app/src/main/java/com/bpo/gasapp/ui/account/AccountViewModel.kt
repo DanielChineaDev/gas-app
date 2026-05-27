@@ -13,7 +13,9 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -32,11 +34,14 @@ class AccountViewModel @Inject constructor(
     private val profileRemote: ProfileRemoteDataSource
 ) : ViewModel() {
 
-    val user: StateFlow<AuthUser?> = authRepository.authState.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = authRepository.currentUser()
-    )
+    private val _user = MutableStateFlow(authRepository.currentUser())
+    val user: StateFlow<AuthUser?> = _user.asStateFlow()
+
+    init {
+        authRepository.authState
+            .onEach { _user.value = it }
+            .launchIn(viewModelScope)
+    }
 
     val favoritesCount: StateFlow<Int> = stationRepository.observeFavorites()
         .map { it.size }
@@ -82,6 +87,33 @@ class AccountViewModel @Inject constructor(
             settingsRepository.setDefaultFuel(remoteFuel)
         } else {
             profileRemote.setDefaultFuel(settingsRepository.settings.first().defaultFuel)
+        }
+    }
+
+    fun loginWithGoogle(idToken: String) {
+        viewModelScope.launch {
+            _form.value = _form.value.copy(isLoading = true, error = null)
+            authRepository.loginWithGoogle(idToken).onSuccess {
+                stationRepository.syncFavorites()
+                syncDefaultFuel()
+                _user.value = it
+                _form.value = AccountFormState()
+            }.onFailure {
+                _form.value = _form.value.copy(isLoading = false, error = "No se pudo iniciar sesión con Google.")
+            }
+        }
+    }
+
+    fun googleSignInFailed() {
+        _form.value = _form.value.copy(isLoading = false, error = "Inicio con Google cancelado o no disponible.")
+    }
+
+    fun updateDisplayName(name: String) {
+        if (name.isBlank()) return
+        viewModelScope.launch {
+            authRepository.updateDisplayName(name).onSuccess {
+                _user.value = authRepository.currentUser()
+            }
         }
     }
 
