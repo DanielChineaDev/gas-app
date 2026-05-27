@@ -1,35 +1,28 @@
 package com.bpo.gasapp.ui.account
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,7 +30,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -49,18 +41,20 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 @Composable
 fun AccountScreen(
     onBack: () -> Unit,
-    onStatsClick: () -> Unit,
-    onFavoritesClick: () -> Unit,
+    onLoggedIn: () -> Unit,
     viewModel: AccountViewModel = hiltViewModel()
 ) {
     val user by viewModel.user.collectAsStateWithLifecycle()
     val form by viewModel.form.collectAsStateWithLifecycle()
-    val favoritesCount by viewModel.favoritesCount.collectAsStateWithLifecycle()
+
+    LaunchedEffect(user) {
+        if (user != null) onLoggedIn()
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Cuenta") },
+                title = { Text("Acceder") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Atrás")
@@ -73,101 +67,13 @@ fun AccountScreen(
             modifier = Modifier.padding(padding).fillMaxSize().padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            if (user != null) {
-                ProfileHeader(email = user?.email ?: "")
-                StatRow(
-                    favoritesCount = favoritesCount,
-                    onFavoritesClick = onFavoritesClick,
-                    onStatsClick = onStatsClick
-                )
-                Text(
-                    "Tus favoritas y tu combustible se sincronizan en la nube.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(Modifier.weight(1f))
-                OutlinedButton(onClick = viewModel::logout, modifier = Modifier.fillMaxWidth()) {
-                    Text("Cerrar sesión")
-                }
-            } else {
-                AuthForm(
-                    isRegisterMode = form.isRegisterMode,
-                    isLoading = form.isLoading,
-                    error = form.error,
-                    onSubmit = viewModel::submit,
-                    onToggleMode = viewModel::toggleMode
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ProfileHeader(email: String) {
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .size(64.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primary),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = email.take(1).uppercase().ifBlank { "U" },
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimary
+            AuthForm(
+                isRegisterMode = form.isRegisterMode,
+                isLoading = form.isLoading,
+                error = form.error,
+                onSubmit = viewModel::submit,
+                onToggleMode = viewModel::toggleMode
             )
-        }
-        Column {
-            Text("Hola 👋", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-            Text(email, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-    }
-}
-
-@Composable
-private fun StatRow(
-    favoritesCount: Int,
-    onFavoritesClick: () -> Unit,
-    onStatsClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        StatCard(
-            value = favoritesCount.toString(),
-            label = "Favoritas",
-            modifier = Modifier.weight(1f),
-            onClick = onFavoritesClick
-        )
-        StatCard(
-            value = "Ver",
-            label = "Estadísticas",
-            modifier = Modifier.weight(1f),
-            onClick = onStatsClick
-        )
-    }
-}
-
-@Composable
-private fun StatCard(value: String, label: String, modifier: Modifier, onClick: () -> Unit) {
-    Card(
-        onClick = onClick,
-        modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(value, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-            Text(label, style = MaterialTheme.typography.labelMedium)
         }
     }
 }
@@ -189,7 +95,7 @@ private fun ColumnScope.AuthForm(
         fontWeight = FontWeight.Bold
     )
     Text(
-        "Inicia sesión para sincronizar tus gasolineras favoritas entre dispositivos.",
+        "Inicia sesión para sincronizar tus gasolineras favoritas y tu combustible entre dispositivos.",
         style = MaterialTheme.typography.bodySmall
     )
 

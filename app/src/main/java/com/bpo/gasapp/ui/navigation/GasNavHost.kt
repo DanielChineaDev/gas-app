@@ -5,6 +5,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -30,6 +31,7 @@ import com.bpo.gasapp.ui.detail.StationDetailScreen
 import com.bpo.gasapp.ui.favorites.FavoritesScreen
 import com.bpo.gasapp.ui.map.MapScreen
 import com.bpo.gasapp.ui.planner.RoutePlannerScreen
+import com.bpo.gasapp.ui.profile.ProfileScreen
 import com.bpo.gasapp.ui.refuel.RefuelLogRoute
 import com.bpo.gasapp.ui.refuel.RefuelLogScreen
 import com.bpo.gasapp.ui.saving.FuelSavingScreen
@@ -41,6 +43,7 @@ object Routes {
     const val LIST = "stations"
     const val MAP = "map"
     const val FAVORITES = "favorites"
+    const val PROFILE = "profile"
     const val ACCOUNT = "account"
     const val SETTINGS = "settings"
     const val COMPARATOR = "comparator"
@@ -50,9 +53,10 @@ object Routes {
 }
 
 private enum class TopLevel(val route: String, val label: String, val icon: ImageVector) {
-    LIST(Routes.LIST, "Cercanas", Icons.AutoMirrored.Filled.List),
+    LIST(Routes.LIST, "Inicio", Icons.AutoMirrored.Filled.List),
     MAP(Routes.MAP, "Mapa", Icons.Default.Map),
-    FAVORITES(Routes.FAVORITES, "Favoritas", Icons.Default.Favorite)
+    FAVORITES(Routes.FAVORITES, "Favoritas", Icons.Default.Favorite),
+    PROFILE(Routes.PROFILE, "Perfil", Icons.Default.Person)
 }
 
 @Composable
@@ -95,11 +99,6 @@ fun GasNavHost(navController: NavHostController = rememberNavController()) {
             composable(Routes.LIST) {
                 StationListScreen(
                     onStationClick = { id -> navController.navigate(StationDetailRoute.build(id)) },
-                    onAccountClick = { navController.navigate(Routes.ACCOUNT) },
-                    onSettingsClick = { navController.navigate(Routes.SETTINGS) },
-                    onPlannerClick = { navController.navigate(Routes.PLANNER) },
-                    onSavingClick = { navController.navigate(Routes.SAVING) },
-                    onStatsClick = { navController.navigate(Routes.STATS) },
                     onLogRefuel = { id, name, fuel ->
                         navController.navigate(RefuelLogRoute.build(id, name, fuel))
                     }
@@ -116,17 +115,19 @@ fun GasNavHost(navController: NavHostController = rememberNavController()) {
                     onCompareClick = { navController.navigate(Routes.COMPARATOR) }
                 )
             }
+            composable(Routes.PROFILE) {
+                ProfileScreen(
+                    onLogin = { navController.navigate(Routes.ACCOUNT) },
+                    onStats = { navController.navigate(Routes.STATS) },
+                    onPlanner = { navController.navigate(Routes.PLANNER) },
+                    onSaving = { navController.navigate(Routes.SAVING) },
+                    onSettings = { navController.navigate(Routes.SETTINGS) }
+                )
+            }
             composable(Routes.ACCOUNT) {
                 AccountScreen(
                     onBack = { navController.popBackStack() },
-                    onStatsClick = { navController.navigate(Routes.STATS) },
-                    onFavoritesClick = {
-                        navController.navigate(Routes.FAVORITES) {
-                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    }
+                    onLoggedIn = { navController.popBackStack() }
                 )
             }
             composable(Routes.SETTINGS) {

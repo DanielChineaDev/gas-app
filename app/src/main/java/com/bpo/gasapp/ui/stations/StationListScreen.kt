@@ -14,16 +14,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.LocationOff
-import androidx.compose.material.icons.filled.Login
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -54,20 +49,12 @@ import com.google.accompanist.permissions.rememberMultiplePermissionsState
 @Composable
 fun StationListScreen(
     onStationClick: (String) -> Unit,
-    onAccountClick: () -> Unit,
-    onSettingsClick: () -> Unit,
-    onPlannerClick: () -> Unit,
-    onSavingClick: () -> Unit,
-    onStatsClick: () -> Unit,
     onLogRefuel: (stationId: String, stationName: String, fuel: String) -> Unit,
-    viewModel: StationListViewModel = hiltViewModel(),
-    accountViewModel: com.bpo.gasapp.ui.account.AccountViewModel = hiltViewModel()
+    viewModel: StationListViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
-    val user by accountViewModel.user.collectAsStateWithLifecycle()
     val nearby by viewModel.nearbyStation.collectAsStateWithLifecycle()
     var showFilters by remember { mutableStateOf(false) }
-    var showMenu by remember { mutableStateOf(false) }
 
     val locationPermissions = rememberMultiplePermissionsState(
         listOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -84,38 +71,8 @@ fun StationListScreen(
                     IconButton(onClick = { showFilters = true }) {
                         Icon(Icons.Default.FilterList, contentDescription = "Filtros")
                     }
-                    IconButton(onClick = onSettingsClick) {
-                        Icon(Icons.Default.Settings, contentDescription = "Ajustes")
-                    }
-                    IconButton(onClick = onAccountClick) {
-                        Icon(
-                            imageVector = if (user != null) Icons.Default.AccountCircle
-                            else Icons.Default.Login,
-                            contentDescription = if (user != null) "Perfil" else "Iniciar sesión",
-                            tint = if (user != null) MaterialTheme.colorScheme.primary
-                            else MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                    IconButton(onClick = { showMenu = true }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "Más opciones")
-                    }
-                    DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
-                        DropdownMenuItem(
-                            text = { Text("Actualizar precios") },
-                            onClick = { showMenu = false; viewModel.refresh() }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Mis estadísticas") },
-                            onClick = { showMenu = false; onStatsClick() }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Planificar ruta") },
-                            onClick = { showMenu = false; onPlannerClick() }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Modo ahorro") },
-                            onClick = { showMenu = false; onSavingClick() }
-                        )
+                    IconButton(onClick = viewModel::refresh) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Actualizar")
                     }
                 }
             )
