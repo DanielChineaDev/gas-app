@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">GasApp</string>
+    <string name="shortcut_cheapest_short">Más barata</string>
+    <string name="shortcut_cheapest_long">La más barata cerca de ti</string>
 </resources>
