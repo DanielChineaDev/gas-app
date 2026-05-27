@@ -59,11 +59,13 @@ fun StationListScreen(
     onPlannerClick: () -> Unit,
     onSavingClick: () -> Unit,
     onStatsClick: () -> Unit,
+    onLogRefuel: (stationId: String, stationName: String, fuel: String) -> Unit,
     viewModel: StationListViewModel = hiltViewModel(),
     accountViewModel: com.bpo.gasapp.ui.account.AccountViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val user by accountViewModel.user.collectAsStateWithLifecycle()
+    val nearby by viewModel.nearbyStation.collectAsStateWithLifecycle()
     var showFilters by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
 
@@ -154,6 +156,25 @@ fun StationListScreen(
                 }
             }
         }
+    }
+
+    nearby?.let { station ->
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { viewModel.dismissNearby(station.id) },
+            title = { Text("¿Has repostado?") },
+            text = { Text("Parece que estás en ${station.brand}. ¿Quieres registrar el repostaje?") },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = {
+                    viewModel.dismissNearby(station.id)
+                    onLogRefuel(station.id, station.brand, state.filters.fuel.name)
+                }) { Text("Sí, registrar") }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = { viewModel.dismissNearby(station.id) }) {
+                    Text("Ahora no")
+                }
+            }
+        )
     }
 
     if (showFilters) {

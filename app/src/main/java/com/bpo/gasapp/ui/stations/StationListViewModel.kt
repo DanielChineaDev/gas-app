@@ -47,6 +47,23 @@ class StationListViewModel @Inject constructor(
     private val location = MutableStateFlow<UserLocation?>(null)
     private val isRefreshing = MutableStateFlow(false)
     private val error = MutableStateFlow<String?>(null)
+    private val dismissedNearbyId = MutableStateFlow<String?>(null)
+
+    /** A station the user is currently at (<100 m), to ask if they refueled. */
+    val nearbyStation: StateFlow<Station?> =
+        combine(repository.observeStations(), location, dismissedNearbyId) { stations, loc, dismissed ->
+            if (loc == null) return@combine null
+            stations.asSequence()
+                .filter { it.id != dismissed }
+                .map { it to distanceMeters(loc, it.latitude, it.longitude) }
+                .filter { it.second <= NEARBY_RADIUS_METERS }
+                .minByOrNull { it.second }
+                ?.first
+        }.flowOn(Dispatchers.Default).stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = null
+        )
 
     private val filtersAndSearch = combine(filters, searchQuery) { f, q -> f to q }
 
@@ -126,6 +143,10 @@ class StationListViewModel @Inject constructor(
         viewModelScope.launch { repository.toggleFavorite(stationId) }
     }
 
+    fun dismissNearby(stationId: String) {
+        dismissedNearbyId.value = stationId
+    }
+
     fun refresh() {
         viewModelScope.launch {
             isRefreshing.value = true
@@ -135,5 +156,9 @@ class StationListViewModel @Inject constructor(
             }
             isRefreshing.value = false
         }
+    }
+
+    private companion object {
+        const val NEARBY_RADIUS_METERS = 100f
     }
 }

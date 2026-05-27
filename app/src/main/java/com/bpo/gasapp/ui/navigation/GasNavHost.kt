@@ -99,7 +99,10 @@ fun GasNavHost(navController: NavHostController = rememberNavController()) {
                     onSettingsClick = { navController.navigate(Routes.SETTINGS) },
                     onPlannerClick = { navController.navigate(Routes.PLANNER) },
                     onSavingClick = { navController.navigate(Routes.SAVING) },
-                    onStatsClick = { navController.navigate(Routes.STATS) }
+                    onStatsClick = { navController.navigate(Routes.STATS) },
+                    onLogRefuel = { id, name, fuel ->
+                        navController.navigate(RefuelLogRoute.build(id, name, fuel))
+                    }
                 )
             }
             composable(Routes.MAP) {
