@@ -1,5 +1,8 @@
 package com.bpo.gasapp.ui.components
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,8 +23,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.bpo.gasapp.domain.model.FuelType
@@ -96,13 +101,19 @@ fun StationCard(
 
             PricePill(price)
 
+            val favScale by animateFloatAsState(
+                targetValue = if (station.isFavorite) 1.15f else 1f,
+                animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
+                label = "favScale"
+            )
             IconButton(onClick = onFavorite) {
                 Icon(
                     imageVector = if (station.isFavorite) Icons.Default.Favorite
                     else Icons.Default.FavoriteBorder,
                     contentDescription = "Favorito",
                     tint = if (station.isFavorite) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.onSurfaceVariant
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.scale(favScale)
                 )
             }
         }

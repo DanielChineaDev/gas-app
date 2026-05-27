@@ -106,7 +106,7 @@ fun StationListScreen(
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
             FuelSelector(state.filters.fuel, viewModel::selectFuel)
 
-            if (!state.hasLocation) {
+            androidx.compose.animation.AnimatedVisibility(visible = !state.hasLocation) {
                 LocationBanner(onEnable = { locationPermissions.launchMultiplePermissionRequest() })
             }
 
@@ -130,7 +130,8 @@ fun StationListScreen(
                             fuel = state.filters.fuel,
                             isCheapest = index == 0 && station.priceOf(state.filters.fuel) != null,
                             onClick = { onStationClick(station.id) },
-                            onFavorite = { viewModel.toggleFavorite(station.id) }
+                            onFavorite = { viewModel.toggleFavorite(station.id) },
+                            modifier = Modifier.animateItem()
                         )
                     }
                 }

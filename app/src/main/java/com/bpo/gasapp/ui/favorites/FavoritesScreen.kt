@@ -64,7 +64,8 @@ fun FavoritesScreen(
                         station = station,
                         fuel = state.selectedFuel,
                         onClick = { onStationClick(station.id) },
-                        onFavorite = { viewModel.toggleFavorite(station.id) }
+                        onFavorite = { viewModel.toggleFavorite(station.id) },
+                        modifier = Modifier.animateItem()
                     )
                 }
             }
