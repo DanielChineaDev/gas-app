@@ -16,8 +16,12 @@ import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Column
+import androidx.glance.layout.Row
+import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
+import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.padding
+import androidx.glance.layout.width
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
@@ -36,20 +40,20 @@ class GasWidget : GlanceAppWidget() {
         val settings = entryPoint.settingsRepository().settings.first()
         val fuel = settings.defaultFuel
         val favorites = entryPoint.stationRepository().observeFavorites().first()
-        val cheapest = favorites
             .mapNotNull { station -> station.priceOf(fuel)?.let { station to it } }
-            .minByOrNull { it.second }
+            .sortedBy { it.second }
+            .take(4)
 
         provideContent {
             GlanceTheme {
-                WidgetContent(fuel = fuel, cheapest = cheapest?.first, price = cheapest?.second)
+                WidgetContent(fuel = fuel, items = favorites)
             }
         }
     }
 }
 
 @Composable
-private fun WidgetContent(fuel: FuelType, cheapest: Station?, price: Double?) {
+private fun WidgetContent(fuel: FuelType, items: List<Pair<Station, Double>>) {
     val context = LocalContext.current
     Column(
         modifier = GlanceModifier
@@ -57,27 +61,40 @@ private fun WidgetContent(fuel: FuelType, cheapest: Station?, price: Double?) {
             .background(GlanceTheme.colors.surface)
             .padding(12.dp)
             .clickable(actionStartActivity(Intent(context, MainActivity::class.java))),
-        verticalAlignment = Alignment.CenterVertically,
         horizontalAlignment = Alignment.Start
     ) {
         Text(
-            "Favorita más barata · ${fuel.label}",
+            "Favoritas más baratas · ${fuel.label}",
             style = TextStyle(fontSize = 12.sp, color = GlanceTheme.colors.onSurfaceVariant)
         )
-        if (cheapest != null && price != null) {
-            Text(
-                cheapest.brand,
-                style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 16.sp, color = GlanceTheme.colors.onSurface)
-            )
-            Text(
-                "%.3f €".format(price),
-                style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 22.sp, color = GlanceTheme.colors.primary)
-            )
-        } else {
+        if (items.isEmpty()) {
             Text(
                 "Sin favoritas con precio",
                 style = TextStyle(fontSize = 14.sp, color = GlanceTheme.colors.onSurface)
             )
+        } else {
+            items.forEach { (station, price) ->
+                Row(
+                    modifier = GlanceModifier.fillMaxWidth().padding(top = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        station.brand,
+                        maxLines = 1,
+                        style = TextStyle(fontSize = 14.sp, color = GlanceTheme.colors.onSurface),
+                        modifier = GlanceModifier.defaultWeight()
+                    )
+                    Spacer(GlanceModifier.width(8.dp))
+                    Text(
+                        "%.3f €".format(price),
+                        style = TextStyle(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = GlanceTheme.colors.primary
+                        )
+                    )
+                }
+            }
         }
     }
 }
