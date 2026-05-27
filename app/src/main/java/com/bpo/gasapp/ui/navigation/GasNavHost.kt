@@ -80,6 +80,7 @@ fun GasNavHost(navController: NavHostController = rememberNavController()) {
     val user by accountViewModel.user.collectAsStateWithLifecycle()
 
     Scaffold(
+        contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
         bottomBar = {
             if (showBottomBar) {
                 NavigationBar {
