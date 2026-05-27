@@ -102,6 +102,19 @@ fun StationListScreen(
                     contentPadding = PaddingValues(12.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    val cheapest = state.stations.minByOrNull {
+                        it.priceOf(state.filters.fuel) ?: Double.MAX_VALUE
+                    }?.takeIf { it.priceOf(state.filters.fuel) != null }
+                    if (cheapest != null) {
+                        item(key = "hero") {
+                            HeroCard(
+                                station = cheapest,
+                                fuel = state.filters.fuel,
+                                zoneAverage = state.zoneAverage,
+                                onClick = { onStationClick(cheapest.id) }
+                            )
+                        }
+                    }
                     itemsIndexed(
                         items = state.stations,
                         key = { _, station -> station.id }
@@ -148,6 +161,65 @@ fun StationListScreen(
             onChange = viewModel::updateFilters,
             onDismiss = { showFilters = false }
         )
+    }
+}
+
+@Composable
+private fun HeroCard(
+    station: com.bpo.gasapp.domain.model.Station,
+    fuel: FuelType,
+    zoneAverage: Double?,
+    onClick: () -> Unit
+) {
+    val price = station.priceOf(fuel) ?: return
+    val saving = zoneAverage?.let { it - price }
+    androidx.compose.material3.Card(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(22.dp),
+        colors = androidx.compose.material3.CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primary
+        )
+    ) {
+        androidx.compose.foundation.layout.Column(
+            Modifier.fillMaxWidth().padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                "⛽ La más barata cerca · ${fuel.label}",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+            Text(
+                station.brand,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+            Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    "%.3f €/L".format(price),
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+                station.distanceMeters?.let {
+                    Text(
+                        if (it < 1000) "a ${it.toInt()} m" else "a %.1f km".format(it / 1000f),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+                }
+            }
+            if (saving != null && saving > 0.001) {
+                Text(
+                    "Ahorras %.3f €/L respecto a la media de la zona".format(saving),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+        }
     }
 }
 
