@@ -91,6 +91,11 @@ fun StationListScreen(
                 LocationBanner(onEnable = { locationPermissions.launchMultiplePermissionRequest() })
             }
 
+            androidx.compose.material3.pulltorefresh.PullToRefreshBox(
+                isRefreshing = state.isRefreshing,
+                onRefresh = viewModel::refresh,
+                modifier = Modifier.fillMaxSize()
+            ) {
             when {
                 state.isRefreshing && state.stations.isEmpty() -> CenteredLoader()
 
@@ -130,6 +135,7 @@ fun StationListScreen(
                         )
                     }
                 }
+            }
             }
         }
     }
