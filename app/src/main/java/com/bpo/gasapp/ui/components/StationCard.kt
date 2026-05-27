@@ -1,12 +1,17 @@
 package com.bpo.gasapp.ui.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.NearMe
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -22,8 +27,8 @@ import com.bpo.gasapp.domain.model.FuelType
 import com.bpo.gasapp.domain.model.Station
 
 private fun formatDistance(meters: Float): String =
-    if (meters < 1000) "a ${meters.toInt()} m"
-    else "a %.1f km".format(meters / 1000f)
+    if (meters < 1000) "${meters.toInt()} m"
+    else "%.1f km".format(meters / 1000f)
 
 @Composable
 fun StationCard(
@@ -38,52 +43,92 @@ fun StationCard(
     Card(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
         colors = if (isCheapest) CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
-        ) else CardDefaults.cardColors()
+        ) else CardDefaults.cardColors(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     station.brand,
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1
                 )
                 Text(
                     station.address.ifBlank { station.city },
-                    style = MaterialTheme.typography.bodySmall
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1
                 )
-                station.distanceMeters?.let { meters ->
-                    Text(
-                        text = formatDistance(meters),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
-                }
-                if (isCheapest) {
-                    Text(
-                        "Más barata",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.primary,
-                        fontWeight = FontWeight.Bold
-                    )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (station.distanceMeters != null) {
+                        Icon(
+                            Icons.Default.NearMe,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+                        Text(
+                            "  ${formatDistance(station.distanceMeters)}",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+                    if (isCheapest) {
+                        Text(
+                            if (station.distanceMeters != null) "   · Más barata" else "Más barata",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
-            Text(
-                text = price?.let { "%.3f €".format(it) } ?: "—",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold
-            )
+
+            PricePill(price)
+
             IconButton(onClick = onFavorite) {
                 Icon(
                     imageVector = if (station.isFavorite) Icons.Default.Favorite
                     else Icons.Default.FavoriteBorder,
-                    contentDescription = "Favorito"
+                    contentDescription = "Favorito",
+                    tint = if (station.isFavorite) MaterialTheme.colorScheme.primary
+                    else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun PricePill(price: Double?) {
+    val container = if (price != null) MaterialTheme.colorScheme.primary
+    else MaterialTheme.colorScheme.surfaceVariant
+    val content = if (price != null) MaterialTheme.colorScheme.onPrimary
+    else MaterialTheme.colorScheme.onSurfaceVariant
+
+    Column(
+        modifier = Modifier
+            .background(container, RoundedCornerShape(12.dp))
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = price?.let { "%.3f".format(it) } ?: "—",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            color = content
+        )
+        Text(
+            "€/L",
+            style = MaterialTheme.typography.labelSmall,
+            color = content
+        )
     }
 }
