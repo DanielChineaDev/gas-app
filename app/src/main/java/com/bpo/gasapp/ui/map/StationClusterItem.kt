@@ -6,6 +6,7 @@ import com.google.maps.android.clustering.ClusterItem
 
 class StationClusterItem(
     val station: Station,
+    val markerLabel: String,
     private val snippetText: String?
 ) : ClusterItem {
     private val position = LatLng(station.latitude, station.longitude)

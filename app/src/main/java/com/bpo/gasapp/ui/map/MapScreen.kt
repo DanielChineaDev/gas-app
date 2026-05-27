@@ -1,8 +1,10 @@
 package com.bpo.gasapp.ui.map
 
 import android.Manifest
+import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -110,7 +112,9 @@ fun MapScreen(
                 onClusterItemClick = { item ->
                     onStationClick(item.station.id)
                     true
-                }
+                },
+                clusterContent = { cluster -> ClusterBubble(cluster.size) },
+                clusterItemContent = { item -> PriceMarker(item.markerLabel) }
             )
         }
 
@@ -171,6 +175,45 @@ fun MapScreen(
 }
 
 @Composable
+private fun PriceMarker(label: String) {
+    androidx.compose.foundation.layout.Box(
+        modifier = androidx.compose.ui.Modifier
+            .background(
+                color = androidx.compose.material3.MaterialTheme.colorScheme.primary,
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(50)
+            )
+            .padding(horizontal = 10.dp, vertical = 5.dp)
+    ) {
+        androidx.compose.material3.Text(
+            text = label,
+            color = androidx.compose.material3.MaterialTheme.colorScheme.onPrimary,
+            style = androidx.compose.material3.MaterialTheme.typography.labelMedium,
+            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+private fun ClusterBubble(count: Int) {
+    androidx.compose.foundation.layout.Box(
+        modifier = androidx.compose.ui.Modifier
+            .size(40.dp)
+            .background(
+                color = androidx.compose.material3.MaterialTheme.colorScheme.secondary,
+                shape = androidx.compose.foundation.shape.CircleShape
+            ),
+        contentAlignment = androidx.compose.ui.Alignment.Center
+    ) {
+        androidx.compose.material3.Text(
+            text = count.toString(),
+            color = androidx.compose.material3.MaterialTheme.colorScheme.onSecondary,
+            style = androidx.compose.material3.MaterialTheme.typography.labelLarge,
+            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+        )
+    }
+}
+
+@Composable
 private fun rememberVisibleClusterItems(
     state: MapUiState,
     bounds: LatLngBounds?,
@@ -182,8 +225,9 @@ private fun rememberVisibleClusterItems(
             .filter { bounds == null || bounds.contains(LatLng(it.latitude, it.longitude)) }
             .map { station ->
                 val price = station.priceOf(state.selectedFuel)
+                val label = price?.let { "%.3f".format(it) } ?: "—"
                 val snippet = price?.let { "${state.selectedFuel.label}: %.3f €".format(it) }
-                StationClusterItem(station, snippet)
+                StationClusterItem(station, label, snippet)
             }
             .toList()
     }
