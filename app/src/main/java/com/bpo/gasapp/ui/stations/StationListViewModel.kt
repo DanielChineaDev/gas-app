@@ -28,6 +28,7 @@ import javax.inject.Inject
 data class StationListUiState(
     val stations: List<Station> = emptyList(),
     val filters: StationFilters = StationFilters(),
+    val searchQuery: String = "",
     val availableBrands: List<String> = emptyList(),
     val hasLocation: Boolean = false,
     val isRefreshing: Boolean = false,
@@ -42,31 +43,40 @@ class StationListViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val filters = MutableStateFlow(StationFilters())
+    private val searchQuery = MutableStateFlow("")
     private val location = MutableStateFlow<UserLocation?>(null)
     private val isRefreshing = MutableStateFlow(false)
     private val error = MutableStateFlow<String?>(null)
 
+    private val filtersAndSearch = combine(filters, searchQuery) { f, q -> f to q }
+
     val uiState: StateFlow<StationListUiState> =
         combine(
             repository.observeStations(),
-            filters,
+            filtersAndSearch,
             location,
             isRefreshing,
             error
-        ) { stations, filters, userLocation, refreshing, err ->
+        ) { stations, (filters, query), userLocation, refreshing, err ->
             val withDistance = if (userLocation != null) {
                 stations.map {
                     it.copy(distanceMeters = distanceMeters(userLocation, it.latitude, it.longitude))
                 }
             } else stations
 
+            val q = query.trim()
             val filtered = withDistance.filter { station ->
                 val brandOk = filters.brands.isEmpty() || station.brand in filters.brands
                 val distanceOk = filters.maxDistanceKm == null ||
                     (station.distanceMeters != null &&
                         station.distanceMeters <= filters.maxDistanceKm * 1000f)
                 val openOk = !filters.openNowOnly || ScheduleParser.isOpen(station.schedule) != false
-                brandOk && distanceOk && openOk
+                val searchOk = q.isEmpty() ||
+                    station.brand.contains(q, ignoreCase = true) ||
+                    station.name.contains(q, ignoreCase = true) ||
+                    station.city.contains(q, ignoreCase = true) ||
+                    station.province.contains(q, ignoreCase = true)
+                brandOk && distanceOk && openOk && searchOk
             }
 
             val sorted = filtered.sortedWith(compareBy(nullsLast()) { it.priceOf(filters.fuel) })
@@ -74,6 +84,7 @@ class StationListViewModel @Inject constructor(
             StationListUiState(
                 stations = sorted,
                 filters = filters,
+                searchQuery = query,
                 availableBrands = stations.map { it.brand }.distinct().sorted(),
                 hasLocation = userLocation != null,
                 isRefreshing = refreshing,
@@ -101,6 +112,10 @@ class StationListViewModel @Inject constructor(
 
     fun updateFilters(newFilters: StationFilters) {
         filters.value = newFilters
+    }
+
+    fun setSearchQuery(query: String) {
+        searchQuery.value = query
     }
 
     fun refreshLocation() {

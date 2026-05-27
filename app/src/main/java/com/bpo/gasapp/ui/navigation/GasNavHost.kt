@@ -43,6 +43,7 @@ object Routes {
     const val COMPARATOR = "comparator"
     const val PLANNER = "planner"
     const val SAVING = "saving"
+    const val STATS = "stats"
 }
 
 private enum class TopLevel(val route: String, val label: String, val icon: ImageVector) {
@@ -94,7 +95,8 @@ fun GasNavHost(navController: NavHostController = rememberNavController()) {
                     onAccountClick = { navController.navigate(Routes.ACCOUNT) },
                     onSettingsClick = { navController.navigate(Routes.SETTINGS) },
                     onPlannerClick = { navController.navigate(Routes.PLANNER) },
-                    onSavingClick = { navController.navigate(Routes.SAVING) }
+                    onSavingClick = { navController.navigate(Routes.SAVING) },
+                    onStatsClick = { navController.navigate(Routes.STATS) }
                 )
             }
             composable(Routes.MAP) {

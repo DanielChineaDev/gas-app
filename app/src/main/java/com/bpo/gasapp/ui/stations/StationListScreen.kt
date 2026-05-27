@@ -14,10 +14,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.LocationOff
+import androidx.compose.material.icons.filled.Login
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.AssistChip
@@ -54,9 +58,12 @@ fun StationListScreen(
     onSettingsClick: () -> Unit,
     onPlannerClick: () -> Unit,
     onSavingClick: () -> Unit,
-    viewModel: StationListViewModel = hiltViewModel()
+    onStatsClick: () -> Unit,
+    viewModel: StationListViewModel = hiltViewModel(),
+    accountViewModel: com.bpo.gasapp.ui.account.AccountViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val user by accountViewModel.user.collectAsStateWithLifecycle()
     var showFilters by remember { mutableStateOf(false) }
     var showMenu by remember { mutableStateOf(false) }
 
@@ -75,13 +82,30 @@ fun StationListScreen(
                     IconButton(onClick = { showFilters = true }) {
                         Icon(Icons.Default.FilterList, contentDescription = "Filtros")
                     }
-                    IconButton(onClick = viewModel::refresh) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Actualizar")
+                    IconButton(onClick = onSettingsClick) {
+                        Icon(Icons.Default.Settings, contentDescription = "Ajustes")
+                    }
+                    IconButton(onClick = onAccountClick) {
+                        Icon(
+                            imageVector = if (user != null) Icons.Default.AccountCircle
+                            else Icons.Default.Login,
+                            contentDescription = if (user != null) "Perfil" else "Iniciar sesión",
+                            tint = if (user != null) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurface
+                        )
                     }
                     IconButton(onClick = { showMenu = true }) {
                         Icon(Icons.Default.MoreVert, contentDescription = "Más opciones")
                     }
                     DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+                        DropdownMenuItem(
+                            text = { Text("Actualizar precios") },
+                            onClick = { showMenu = false; viewModel.refresh() }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Mis estadísticas") },
+                            onClick = { showMenu = false; onStatsClick() }
+                        )
                         DropdownMenuItem(
                             text = { Text("Planificar ruta") },
                             onClick = { showMenu = false; onPlannerClick() }
@@ -90,20 +114,13 @@ fun StationListScreen(
                             text = { Text("Modo ahorro") },
                             onClick = { showMenu = false; onSavingClick() }
                         )
-                        DropdownMenuItem(
-                            text = { Text("Cuenta") },
-                            onClick = { showMenu = false; onAccountClick() }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Ajustes") },
-                            onClick = { showMenu = false; onSettingsClick() }
-                        )
                     }
                 }
             )
         }
     ) { padding ->
         Column(modifier = Modifier.padding(padding).fillMaxSize()) {
+            SearchBar(query = state.searchQuery, onQueryChange = viewModel::setSearchQuery)
             FuelSelector(state.filters.fuel, viewModel::selectFuel)
 
             androidx.compose.animation.AnimatedVisibility(visible = !state.hasLocation) {
@@ -148,6 +165,26 @@ fun StationListScreen(
             onDismiss = { showFilters = false }
         )
     }
+}
+
+@Composable
+private fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
+    androidx.compose.material3.OutlinedTextField(
+        value = query,
+        onValueChange = onQueryChange,
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+        placeholder = { Text("Buscar por marca, ciudad...") },
+        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+        trailingIcon = {
+            if (query.isNotEmpty()) {
+                IconButton(onClick = { onQueryChange("") }) {
+                    Icon(Icons.Default.Close, contentDescription = "Limpiar")
+                }
+            }
+        },
+        singleLine = true,
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(28.dp)
+    )
 }
 
 @Composable
