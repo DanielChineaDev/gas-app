@@ -18,3 +18,4 @@ keystore.properties
 
 # Empaquetado de la landing (se genera con scripts/package-landing.sh)
 landing-ionos.zip
+landing-ionos/
