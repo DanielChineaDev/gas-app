@@ -16,6 +16,12 @@ keystore.properties
 *.keystore
 *.jks
 
+# Service account de Firebase (no debe versionarse JAMÁS)
+service-account.json
+
+# Códigos promocionales generados (privados)
+firestore-promo-codes.json
+
 # Empaquetado de la landing (se genera con scripts/package-landing.sh)
 landing-ionos.zip
 landing-ionos/
