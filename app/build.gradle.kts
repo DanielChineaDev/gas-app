@@ -21,6 +21,15 @@ val localProperties = Properties().apply {
 val mapsApiKey: String = localProperties.getProperty("MAPS_API_KEY") ?: ""
 val webClientId: String = localProperties.getProperty("WEB_CLIENT_ID") ?: ""
 
+// Por defecto se usan los IDs DE PRUEBA de AdMob (Google los proporciona).
+// Sustituye los reales en local.properties cuando publiques.
+val admobAppId: String = localProperties.getProperty("ADMOB_APP_ID")
+    ?: "ca-app-pub-3940256099942544~3347511713"
+val admobBannerUnit: String = localProperties.getProperty("ADMOB_BANNER_UNIT")
+    ?: "ca-app-pub-3940256099942544/6300978111"
+val billingProductId: String = localProperties.getProperty("BILLING_REMOVE_ADS_PRODUCT")
+    ?: "remove_ads"
+
 val keystoreProperties = Properties().apply {
     val f = rootProject.file("keystore.properties")
     if (f.exists()) f.inputStream().use { load(it) }
@@ -41,8 +50,11 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
+        manifestPlaceholders["ADMOB_APP_ID"] = admobAppId
         buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
         buildConfigField("String", "WEB_CLIENT_ID", "\"$webClientId\"")
+        buildConfigField("String", "ADMOB_BANNER_UNIT", "\"$admobBannerUnit\"")
+        buildConfigField("String", "BILLING_REMOVE_ADS_PRODUCT", "\"$billingProductId\"")
     }
 
     signingConfigs {
@@ -136,6 +148,8 @@ dependencies {
     implementation(libs.credentials)
     implementation(libs.credentials.play.services)
     implementation(libs.googleid)
+    implementation(libs.play.services.ads)
+    implementation(libs.billing.ktx)
 
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)

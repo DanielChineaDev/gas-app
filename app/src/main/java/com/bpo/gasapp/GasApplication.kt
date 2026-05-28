@@ -23,5 +23,6 @@ class GasApplication : Application(), Configuration.Provider {
         super.onCreate()
         priceNotifier.createChannel()
         PriceRefreshWorker.schedule(this)
+        com.google.android.gms.ads.MobileAds.initialize(this) {}
     }
 }

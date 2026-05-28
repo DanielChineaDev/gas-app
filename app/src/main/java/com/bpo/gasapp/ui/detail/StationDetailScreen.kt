@@ -191,6 +191,8 @@ private fun StationDetailContent(
             Icon(Icons.Default.Navigation, contentDescription = null)
             Text("  Ir allí")
         }
+
+        com.bpo.gasapp.ui.ads.BannerAd()
     }
 }
 

@@ -62,6 +62,7 @@ object Routes {
     const val STATS = "stats"
     const val CAR = "car"
     const val VEHICLES = "vehicles"
+    const val PREMIUM = "premium"
 }
 
 private enum class TopLevel(val route: String, val label: String, val icon: ImageVector) {
@@ -84,6 +85,8 @@ fun GasNavHost(navController: NavHostController = rememberNavController()) {
         contentWindowInsets = androidx.compose.foundation.layout.WindowInsets(0, 0, 0, 0),
         bottomBar = {
             if (showBottomBar) {
+                androidx.compose.foundation.layout.Column {
+                    com.bpo.gasapp.ui.ads.BannerAd()
                 NavigationBar {
                     TopLevel.entries.forEach { item ->
                         val selected = backStackEntry?.destination?.hierarchy
@@ -109,6 +112,7 @@ fun GasNavHost(navController: NavHostController = rememberNavController()) {
                             label = { Text(item.label) }
                         )
                     }
+                }
                 }
             }
         }
@@ -145,8 +149,12 @@ fun GasNavHost(navController: NavHostController = rememberNavController()) {
                     onSaving = { navController.navigate(Routes.SAVING) },
                     onCarMode = { navController.navigate(Routes.CAR) },
                     onVehicles = { navController.navigate(Routes.VEHICLES) },
+                    onPremium = { navController.navigate(Routes.PREMIUM) },
                     onSettings = { navController.navigate(Routes.SETTINGS) }
                 )
+            }
+            composable(Routes.PREMIUM) {
+                com.bpo.gasapp.ui.premium.PremiumScreen(onBack = { navController.popBackStack() })
             }
             composable(Routes.VEHICLES) {
                 com.bpo.gasapp.ui.vehicles.VehiclesScreen(onBack = { navController.popBackStack() })

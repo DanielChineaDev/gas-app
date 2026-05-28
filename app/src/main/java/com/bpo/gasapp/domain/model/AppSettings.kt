@@ -8,5 +8,6 @@ data class AppSettings(
     /** Price alert: notify if any nearby station for this fuel drops to/below the threshold. */
     val alertFuel: FuelType = FuelType.GASOLINA_95,
     val alertThreshold: Double? = null,
-    val selectedVehicleId: Long? = null
+    val selectedVehicleId: Long? = null,
+    val isPremium: Boolean = false
 )

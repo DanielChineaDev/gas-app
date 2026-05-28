@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Route
 import androidx.compose.material.icons.filled.Savings
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -57,6 +58,7 @@ fun ProfileScreen(
     onSaving: () -> Unit,
     onCarMode: () -> Unit,
     onVehicles: () -> Unit,
+    onPremium: () -> Unit,
     onSettings: () -> Unit,
     viewModel: AccountViewModel = hiltViewModel()
 ) {
@@ -144,6 +146,7 @@ fun ProfileScreen(
             MenuRow(Icons.Default.Route, "Planificar ruta", onPlanner)
             MenuRow(Icons.Default.Savings, "Modo ahorro", onSaving)
             MenuRow(Icons.Default.DirectionsCar, "Modo coche", onCarMode)
+            MenuRow(Icons.Default.Star, "Quitar anuncios", onPremium)
             MenuRow(Icons.Default.Settings, "Ajustes", onSettings)
 
             if (user != null) {

@@ -30,7 +30,8 @@ class SettingsRepository @Inject constructor(
             alertFuel = prefs[KEY_ALERT_FUEL]?.let { runCatching { FuelType.valueOf(it) }.getOrNull() }
                 ?: FuelType.GASOLINA_95,
             alertThreshold = prefs[KEY_ALERT_THRESHOLD],
-            selectedVehicleId = prefs[KEY_SELECTED_VEHICLE]
+            selectedVehicleId = prefs[KEY_SELECTED_VEHICLE],
+            isPremium = prefs[KEY_PREMIUM] ?: false
         )
     }
 
@@ -48,6 +49,10 @@ class SettingsRepository @Inject constructor(
 
     suspend fun setDynamicColor(enabled: Boolean) {
         dataStore.edit { it[KEY_DYNAMIC] = enabled }
+    }
+
+    suspend fun setPremium(value: Boolean) {
+        dataStore.edit { it[KEY_PREMIUM] = value }
     }
 
     suspend fun setSelectedVehicle(id: Long?) {
@@ -71,5 +76,6 @@ class SettingsRepository @Inject constructor(
         val KEY_ALERT_FUEL = stringPreferencesKey("alert_fuel")
         val KEY_ALERT_THRESHOLD = doublePreferencesKey("alert_threshold")
         val KEY_SELECTED_VEHICLE = longPreferencesKey("selected_vehicle")
+        val KEY_PREMIUM = booleanPreferencesKey("is_premium")
     }
 }
