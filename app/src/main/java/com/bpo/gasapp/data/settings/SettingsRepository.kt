@@ -26,7 +26,7 @@ class SettingsRepository @Inject constructor(
             defaultFuel = prefs[KEY_FUEL]?.let { runCatching { FuelType.valueOf(it) }.getOrNull() }
                 ?: FuelType.GASOLINA_95,
             onboardingDone = prefs[KEY_ONBOARDING] ?: false,
-            dynamicColor = prefs[KEY_DYNAMIC] ?: true,
+            dynamicColor = prefs[KEY_DYNAMIC] ?: false,
             alertFuel = prefs[KEY_ALERT_FUEL]?.let { runCatching { FuelType.valueOf(it) }.getOrNull() }
                 ?: FuelType.GASOLINA_95,
             alertThreshold = prefs[KEY_ALERT_THRESHOLD],
