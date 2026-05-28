@@ -100,6 +100,20 @@ fun PremiumScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) { Text("¿Tienes un código?") }
             }
+
+            val coffeeUrl = com.bpo.gasapp.BuildConfig.COFFEE_URL
+            if (coffeeUrl.isNotBlank()) {
+                androidx.compose.material3.TextButton(
+                    onClick = {
+                        val intent = android.content.Intent(
+                            android.content.Intent.ACTION_VIEW,
+                            android.net.Uri.parse(coffeeUrl)
+                        )
+                        kotlin.runCatching { context.startActivity(intent) }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text("☕  Invítame a un café") }
+            }
         }
     }
 

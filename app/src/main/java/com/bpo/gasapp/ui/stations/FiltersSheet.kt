@@ -48,25 +48,36 @@ fun FiltersSheet(
                 }
             }
 
-            Text("Distancia", fontWeight = FontWeight.SemiBold)
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Distancia", fontWeight = FontWeight.SemiBold)
+                val km = filters.maxDistanceKm
+                Text(
+                    if (km == null) "Sin límite" else "$km km",
+                    style = androidx.compose.material3.MaterialTheme.typography.labelLarge,
+                    color = androidx.compose.material3.MaterialTheme.colorScheme.primary
+                )
+            }
             if (!hasLocation) {
                 Text(
                     "Activa la ubicación para filtrar por distancia.",
                     style = androidx.compose.material3.MaterialTheme.typography.bodySmall
                 )
             }
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                StationFilters.DISTANCE_OPTIONS.forEach { km ->
-                    FilterChip(
-                        selected = filters.maxDistanceKm == km,
-                        onClick = {
-                            onChange(filters.copy(maxDistanceKm = if (filters.maxDistanceKm == km) null else km))
-                        },
-                        enabled = hasLocation,
-                        label = { Text("$km km") }
-                    )
-                }
-            }
+            androidx.compose.material3.Slider(
+                value = (filters.maxDistanceKm ?: StationFilters.DISTANCE_MAX_KM).toFloat(),
+                onValueChange = { onChange(filters.copy(maxDistanceKm = it.toInt())) },
+                valueRange = StationFilters.DISTANCE_MIN_KM.toFloat()..StationFilters.DISTANCE_MAX_KM.toFloat(),
+                steps = StationFilters.DISTANCE_MAX_KM - StationFilters.DISTANCE_MIN_KM - 1,
+                enabled = hasLocation
+            )
+            androidx.compose.material3.TextButton(
+                onClick = { onChange(filters.copy(maxDistanceKm = null)) },
+                enabled = hasLocation && filters.maxDistanceKm != null
+            ) { Text("Quitar límite de distancia") }
 
             Row(
                 Modifier.fillMaxWidth(),

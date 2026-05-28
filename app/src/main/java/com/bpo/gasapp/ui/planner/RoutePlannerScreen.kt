@@ -15,6 +15,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -68,8 +69,21 @@ fun RoutePlannerScreen(
             )
 
             OutlinedTextField(
+                value = if (state.useCurrentLocation) "Mi ubicación" else state.originQuery,
+                onValueChange = viewModel::setOrigin,
+                label = { Text("Origen") },
+                singleLine = true,
+                trailingIcon = {
+                    IconButton(onClick = viewModel::useMyLocation) {
+                        Icon(Icons.Default.MyLocation, contentDescription = "Usar mi ubicación")
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
                 value = state.destinationQuery,
-                onValueChange = viewModel::setQuery,
+                onValueChange = viewModel::setDestination,
                 label = { Text("Destino (ciudad, dirección...)") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),

@@ -38,12 +38,20 @@ class VehiclesViewModel @Inject constructor(
         viewModelScope.launch {
             val id = vehicleRepository.add(name, fuel, consumption)
             // Auto-select the first vehicle added.
-            if (uiState.value.selectedId == null) settingsRepository.setSelectedVehicle(id)
+            if (uiState.value.selectedId == null) {
+                settingsRepository.setSelectedVehicle(id)
+                settingsRepository.setDefaultFuel(fuel)
+            }
         }
     }
 
     fun select(id: Long) {
-        viewModelScope.launch { settingsRepository.setSelectedVehicle(id) }
+        viewModelScope.launch {
+            settingsRepository.setSelectedVehicle(id)
+            vehicleRepository.getById(id)?.let { v ->
+                settingsRepository.setDefaultFuel(v.fuel)
+            }
+        }
     }
 
     fun delete(vehicle: Vehicle) {

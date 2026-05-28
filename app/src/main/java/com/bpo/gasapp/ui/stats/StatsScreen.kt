@@ -2,6 +2,7 @@ package com.bpo.gasapp.ui.stats
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -88,15 +89,131 @@ fun StatsScreen(
                 contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
+                state.selectedVehicle?.let { vehicle ->
+                    item(key = "scope-toggle") {
+                        ScopeToggle(
+                            vehicleName = vehicle.name,
+                            showAll = state.showAllVehicles,
+                            onChange = viewModel::setShowAllVehicles
+                        )
+                    }
+                }
                 if (state.avgConsumption != null || state.avgCostPerKm != null) {
                     item(key = "consumption") {
                         ConsumptionCard(state.avgConsumption, state.avgCostPerKm)
                     }
                 }
+                item(key = "calendar") { MonthCalendar(state.dailyAmounts) }
                 item(key = "chart") { SpendChart(state.months) }
                 items(state.months, key = { it.month }) { month ->
                     MonthCard(month)
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ScopeToggle(vehicleName: String, showAll: Boolean, onChange: (Boolean) -> Unit) {
+    Card(Modifier.fillMaxWidth()) {
+        Row(
+            Modifier.fillMaxWidth().padding(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            ToggleChip("Solo $vehicleName", !showAll, Modifier.weight(1f)) { onChange(false) }
+            ToggleChip("Todos los coches", showAll, Modifier.weight(1f)) { onChange(true) }
+        }
+    }
+}
+
+@Composable
+private fun ToggleChip(text: String, selected: Boolean, modifier: Modifier, onClick: () -> Unit) {
+    val container = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
+    val content = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
+    androidx.compose.material3.Surface(
+        onClick = onClick,
+        modifier = modifier,
+        color = container,
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+    ) {
+        Text(
+            text,
+            modifier = Modifier.fillMaxWidth().padding(10.dp),
+            color = content,
+            style = MaterialTheme.typography.labelLarge,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+        )
+    }
+}
+
+@Composable
+private fun MonthCalendar(dailyAmounts: Map<String, Double>) {
+    val now = java.util.Calendar.getInstance()
+    val year = now.get(java.util.Calendar.YEAR)
+    val month0 = now.get(java.util.Calendar.MONTH)
+    val firstDay = java.util.Calendar.getInstance().apply {
+        set(year, month0, 1, 0, 0, 0); set(java.util.Calendar.MILLISECOND, 0)
+    }
+    val daysInMonth = firstDay.getActualMaximum(java.util.Calendar.DAY_OF_MONTH)
+    // Lunes=0 ... Domingo=6 (en Calendar, DAY_OF_WEEK: 1=Sun..7=Sat)
+    val firstWeekday = (firstDay.get(java.util.Calendar.DAY_OF_WEEK) + 5) % 7
+    val monthKeyFmt = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+    val monthLabel = java.text.SimpleDateFormat("MMMM yyyy", java.util.Locale("es", "ES"))
+        .format(firstDay.time)
+        .replaceFirstChar { it.uppercase() }
+
+    Card(
+        Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
+    ) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(monthLabel, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                listOf("L", "M", "X", "J", "V", "S", "D").forEach {
+                    Text(it, style = MaterialTheme.typography.labelSmall, modifier = Modifier.weight(1f),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                }
+            }
+            val totalCells = firstWeekday + daysInMonth
+            val rows = (totalCells + 6) / 7
+            for (r in 0 until rows) {
+                Row(Modifier.fillMaxWidth()) {
+                    for (c in 0 until 7) {
+                        val cell = r * 7 + c
+                        val day = cell - firstWeekday + 1
+                        if (day in 1..daysInMonth) {
+                            val cal = java.util.Calendar.getInstance().apply {
+                                set(year, month0, day)
+                            }
+                            val key = monthKeyFmt.format(cal.time)
+                            val amount = dailyAmounts[key]
+                            DayCell(day = day, amount = amount, modifier = Modifier.weight(1f))
+                        } else {
+                            Box(Modifier.weight(1f).height(40.dp))
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DayCell(day: Int, amount: Double?, modifier: Modifier) {
+    Box(
+        modifier = modifier.height(40.dp),
+        contentAlignment = androidx.compose.ui.Alignment.Center
+    ) {
+        Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+            Text(day.toString(), style = MaterialTheme.typography.labelMedium)
+            if (amount != null) {
+                Text(
+                    "%.0f€".format(amount),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Bold
+                )
             }
         }
     }

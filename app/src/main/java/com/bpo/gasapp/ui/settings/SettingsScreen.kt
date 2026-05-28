@@ -91,31 +91,6 @@ fun SettingsScreen(
 
             androidx.compose.material3.HorizontalDivider()
 
-            androidx.compose.foundation.layout.Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        "Colores del sistema (Material You)",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        "Si lo desactivas, se usa la paleta verde de GasApp.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                androidx.compose.material3.Switch(
-                    checked = settings.dynamicColor,
-                    onCheckedChange = viewModel::setDynamicColor
-                )
-            }
-
-            androidx.compose.material3.HorizontalDivider()
-
             PriceAlertSection(
                 alertFuel = settings.alertFuel,
                 alertThreshold = settings.alertThreshold,

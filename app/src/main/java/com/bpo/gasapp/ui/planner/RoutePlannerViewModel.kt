@@ -18,6 +18,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 data class RoutePlannerUiState(
+    val originQuery: String = "",
+    val useCurrentLocation: Boolean = true,
     val destinationQuery: String = "",
     val corridorKm: Int = 5,
     val selectedFuel: FuelType = FuelType.GASOLINA_95,
@@ -50,7 +52,15 @@ class RoutePlannerViewModel @Inject constructor(
         }
     }
 
-    fun setQuery(query: String) {
+    fun setOrigin(query: String) {
+        _uiState.value = _uiState.value.copy(originQuery = query, useCurrentLocation = false)
+    }
+
+    fun useMyLocation() {
+        _uiState.value = _uiState.value.copy(useCurrentLocation = true, originQuery = "")
+    }
+
+    fun setDestination(query: String) {
         _uiState.value = _uiState.value.copy(destinationQuery = query)
     }
 
@@ -68,14 +78,33 @@ class RoutePlannerViewModel @Inject constructor(
         val state = _uiState.value
         viewModelScope.launch {
             _uiState.value = state.copy(isLoading = true, error = null)
-            val origin = locationProvider.currentLocation()
-            if (origin == null) {
-                _uiState.value = state.copy(isLoading = false, error = "Activa la ubicación para planificar la ruta.")
-                return@launch
+
+            val origin = if (state.useCurrentLocation) {
+                locationProvider.currentLocation()
+                    ?: run {
+                        _uiState.value = state.copy(
+                            isLoading = false,
+                            error = "Activa la ubicación o introduce un origen."
+                        )
+                        return@launch
+                    }
+            } else {
+                geocoder.geocode(state.originQuery)
+                    ?: run {
+                        _uiState.value = state.copy(
+                            isLoading = false,
+                            error = "No se encontró el origen. Prueba con otra dirección."
+                        )
+                        return@launch
+                    }
             }
+
             val destination = geocoder.geocode(state.destinationQuery)
             if (destination == null) {
-                _uiState.value = state.copy(isLoading = false, error = "No se encontró el destino. Prueba con otra dirección.")
+                _uiState.value = state.copy(
+                    isLoading = false,
+                    error = "No se encontró el destino. Prueba con otra dirección."
+                )
                 return@launch
             }
 

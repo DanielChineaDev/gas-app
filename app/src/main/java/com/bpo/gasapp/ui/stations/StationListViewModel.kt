@@ -84,7 +84,7 @@ class StationListViewModel @Inject constructor(
 
             val qNorm = query.trim().normalizeForSearch()
             val filtered = withDistance.filter { station ->
-                val brandOk = filters.brands.isEmpty() || station.brand in filters.brands
+                val brandOk = filters.brands.isEmpty() || station.brand.trim().titleCase() in filters.brands
                 val distanceOk = filters.maxDistanceKm == null ||
                     (station.distanceMeters != null &&
                         station.distanceMeters <= filters.maxDistanceKm * 1000f)
@@ -111,11 +111,25 @@ class StationListViewModel @Inject constructor(
             val prices = filtered.mapNotNull { it.priceOf(filters.fuel) }
             val zoneAverage = if (prices.isNotEmpty()) prices.average() else null
 
+            // Normaliza marcas (trim + Title Case) y muestra solo las que
+            // aparezcan al menos 5 veces para no llenar el filtro de marcas
+            // raras / con erratas del dataset oficial.
+            val brandCounts = stations
+                .map { it.brand.trim().titleCase() }
+                .filter { it.isNotBlank() }
+                .groupingBy { it }
+                .eachCount()
+            val availableBrands = brandCounts
+                .filterValues { it >= 5 }
+                .entries
+                .sortedByDescending { it.value }
+                .map { it.key }
+
             StationListUiState(
                 stations = sorted,
                 filters = filters,
                 searchQuery = query,
-                availableBrands = stations.map { it.brand }.distinct().sorted(),
+                availableBrands = availableBrands,
                 zoneAverage = zoneAverage,
                 hasLocation = userLocation != null,
                 isRefreshing = refreshing,
@@ -188,3 +202,9 @@ private fun String.normalizeForSearch(): String =
     java.text.Normalizer.normalize(this, java.text.Normalizer.Form.NFD)
         .replace(DIACRITICS, "")
         .lowercase()
+
+/** "REPSOL S.A." -> "Repsol S.A." para limpiar las marcas del dataset. */
+private fun String.titleCase(): String =
+    lowercase().split(' ').joinToString(" ") { word ->
+        word.replaceFirstChar { c -> if (c.isLetter()) c.uppercaseChar() else c }
+    }

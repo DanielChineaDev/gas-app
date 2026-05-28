@@ -29,6 +29,7 @@ val admobBannerUnit: String = localProperties.getProperty("ADMOB_BANNER_UNIT")
     ?: "ca-app-pub-3940256099942544/6300978111"
 val billingProductId: String = localProperties.getProperty("BILLING_REMOVE_ADS_PRODUCT")
     ?: "remove_ads"
+val coffeeUrl: String = localProperties.getProperty("COFFEE_URL") ?: ""
 
 val keystoreProperties = Properties().apply {
     val f = rootProject.file("keystore.properties")
@@ -55,6 +56,7 @@ android {
         buildConfigField("String", "WEB_CLIENT_ID", "\"$webClientId\"")
         buildConfigField("String", "ADMOB_BANNER_UNIT", "\"$admobBannerUnit\"")
         buildConfigField("String", "BILLING_REMOVE_ADS_PRODUCT", "\"$billingProductId\"")
+        buildConfigField("String", "COFFEE_URL", "\"$coffeeUrl\"")
     }
 
     signingConfigs {
