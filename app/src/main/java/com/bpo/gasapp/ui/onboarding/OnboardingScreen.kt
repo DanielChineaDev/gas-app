@@ -55,8 +55,8 @@ private val PAGES = listOf(
     ),
     TourPage(
         "🚗",
-        "Modo coche y ruta",
-        "El precio en grande para mirar al volante y un planificador para repostar de paso en tus viajes."
+        "Modo coche y ahorro",
+        "El precio en grande para mirar al volante y el modo ahorro para repostar siempre al mejor precio."
     )
 )
 

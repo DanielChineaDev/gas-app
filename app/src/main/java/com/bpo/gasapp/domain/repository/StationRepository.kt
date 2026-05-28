@@ -31,4 +31,20 @@ interface StationRepository {
 
     /** Two-way merge of local and remote favorites. No-op if not logged in. */
     suspend fun syncFavorites()
+
+    /** Number of favorites stored locally. */
+    suspend fun localFavoritesCount(): Int
+
+    /** Whether there's a logged-in account to sync favorites with. */
+    fun isLoggedIn(): Boolean
+
+    /**
+     * Resolves local favorites against the remote account on login.
+     * - [FavoriteMergeStrategy.MERGE]: union of local + remote.
+     * - [FavoriteMergeStrategy.KEEP_LOCAL]: local wins, remote-only entries removed.
+     * - [FavoriteMergeStrategy.DISCARD_LOCAL]: remote wins, local entries cleared.
+     */
+    suspend fun resolveFavoritesOnLogin(strategy: FavoriteMergeStrategy)
 }
+
+enum class FavoriteMergeStrategy { MERGE, KEEP_LOCAL, DISCARD_LOCAL }

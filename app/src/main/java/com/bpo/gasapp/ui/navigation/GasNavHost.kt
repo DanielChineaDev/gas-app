@@ -40,7 +40,6 @@ import com.bpo.gasapp.ui.detail.StationDetailRoute
 import com.bpo.gasapp.ui.detail.StationDetailScreen
 import com.bpo.gasapp.ui.favorites.FavoritesScreen
 import com.bpo.gasapp.ui.map.MapScreen
-import com.bpo.gasapp.ui.planner.RoutePlannerScreen
 import com.bpo.gasapp.ui.profile.ProfileScreen
 import com.bpo.gasapp.ui.refuel.RefuelLogRoute
 import com.bpo.gasapp.ui.refuel.RefuelLogScreen
@@ -57,11 +56,11 @@ object Routes {
     const val ACCOUNT = "account"
     const val SETTINGS = "settings"
     const val COMPARATOR = "comparator"
-    const val PLANNER = "planner"
     const val SAVING = "saving"
     const val STATS = "stats"
     const val CAR = "car"
     const val VEHICLES = "vehicles"
+    const val ACHIEVEMENTS = "achievements"
     const val PREMIUM = "premium"
 }
 
@@ -145,10 +144,10 @@ fun GasNavHost(navController: NavHostController = rememberNavController()) {
                 ProfileScreen(
                     onLogin = { navController.navigate(Routes.ACCOUNT) },
                     onStats = { navController.navigate(Routes.STATS) },
-                    onPlanner = { navController.navigate(Routes.PLANNER) },
                     onSaving = { navController.navigate(Routes.SAVING) },
                     onCarMode = { navController.navigate(Routes.CAR) },
                     onVehicles = { navController.navigate(Routes.VEHICLES) },
+                    onAchievements = { navController.navigate(Routes.ACHIEVEMENTS) },
                     onPremium = { navController.navigate(Routes.PREMIUM) },
                     onSettings = { navController.navigate(Routes.SETTINGS) }
                 )
@@ -158,6 +157,9 @@ fun GasNavHost(navController: NavHostController = rememberNavController()) {
             }
             composable(Routes.VEHICLES) {
                 com.bpo.gasapp.ui.vehicles.VehiclesScreen(onBack = { navController.popBackStack() })
+            }
+            composable(Routes.ACHIEVEMENTS) {
+                com.bpo.gasapp.ui.achievements.AchievementsScreen(onBack = { navController.popBackStack() })
             }
             composable(Routes.CAR) {
                 com.bpo.gasapp.ui.carmode.CarModeScreen(onBack = { navController.popBackStack() })
@@ -173,12 +175,6 @@ fun GasNavHost(navController: NavHostController = rememberNavController()) {
             }
             composable(Routes.COMPARATOR) {
                 TankComparatorScreen(onBack = { navController.popBackStack() })
-            }
-            composable(Routes.PLANNER) {
-                RoutePlannerScreen(
-                    onStationClick = { id -> navController.navigate(StationDetailRoute.build(id)) },
-                    onBack = { navController.popBackStack() }
-                )
             }
             composable(Routes.SAVING) {
                 FuelSavingScreen(

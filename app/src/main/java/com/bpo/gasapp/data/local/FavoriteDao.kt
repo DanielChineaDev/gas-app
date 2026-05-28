@@ -19,6 +19,12 @@ interface FavoriteDao {
     @Query("DELETE FROM favorites WHERE stationId = :stationId")
     suspend fun remove(stationId: String)
 
+    @Query("DELETE FROM favorites")
+    suspend fun clear()
+
+    @Query("SELECT COUNT(*) FROM favorites")
+    suspend fun count(): Int
+
     @Query("SELECT EXISTS(SELECT 1 FROM favorites WHERE stationId = :stationId)")
     suspend fun isFavorite(stationId: String): Boolean
 }

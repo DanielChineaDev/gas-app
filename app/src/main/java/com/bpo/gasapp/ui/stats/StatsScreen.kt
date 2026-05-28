@@ -13,6 +13,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.Card
@@ -27,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -149,12 +152,15 @@ private fun ToggleChip(text: String, selected: Boolean, modifier: Modifier, onCl
 
 @Composable
 private fun MonthCalendar(dailyAmounts: Map<String, Double>) {
-    val now = java.util.Calendar.getInstance()
-    val year = now.get(java.util.Calendar.YEAR)
-    val month0 = now.get(java.util.Calendar.MONTH)
+    var monthOffset by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(0) }
     val firstDay = java.util.Calendar.getInstance().apply {
-        set(year, month0, 1, 0, 0, 0); set(java.util.Calendar.MILLISECOND, 0)
+        set(java.util.Calendar.DAY_OF_MONTH, 1)
+        set(java.util.Calendar.HOUR_OF_DAY, 0); set(java.util.Calendar.MINUTE, 0)
+        set(java.util.Calendar.SECOND, 0); set(java.util.Calendar.MILLISECOND, 0)
+        add(java.util.Calendar.MONTH, monthOffset)
     }
+    val year = firstDay.get(java.util.Calendar.YEAR)
+    val month0 = firstDay.get(java.util.Calendar.MONTH)
     val daysInMonth = firstDay.getActualMaximum(java.util.Calendar.DAY_OF_MONTH)
     // Lunes=0 ... Domingo=6 (en Calendar, DAY_OF_WEEK: 1=Sun..7=Sat)
     val firstWeekday = (firstDay.get(java.util.Calendar.DAY_OF_WEEK) + 5) % 7
@@ -168,7 +174,25 @@ private fun MonthCalendar(dailyAmounts: Map<String, Double>) {
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer)
     ) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(monthLabel, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+            ) {
+                IconButton(onClick = { monthOffset-- }) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                        contentDescription = "Mes anterior"
+                    )
+                }
+                Text(monthLabel, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                IconButton(onClick = { monthOffset++ }) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = "Mes siguiente"
+                    )
+                }
+            }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                 listOf("L", "M", "X", "J", "V", "S", "D").forEach {
                     Text(it, style = MaterialTheme.typography.labelSmall, modifier = Modifier.weight(1f),

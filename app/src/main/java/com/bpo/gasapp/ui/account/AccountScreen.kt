@@ -50,11 +50,19 @@ fun AccountScreen(
 ) {
     val user by viewModel.user.collectAsStateWithLifecycle()
     val form by viewModel.form.collectAsStateWithLifecycle()
+    val pendingLocalFavorites by viewModel.pendingLocalFavorites.collectAsStateWithLifecycle()
     val context = androidx.compose.ui.platform.LocalContext.current
     val scope = androidx.compose.runtime.rememberCoroutineScope()
 
-    LaunchedEffect(user) {
-        if (user != null) onLoggedIn()
+    LaunchedEffect(user, pendingLocalFavorites) {
+        if (user != null && pendingLocalFavorites == 0) onLoggedIn()
+    }
+
+    if (pendingLocalFavorites > 0) {
+        LocalFavoritesDialog(
+            count = pendingLocalFavorites,
+            onChoice = viewModel::resolveLocalFavorites
+        )
     }
 
     val onGoogleClick: () -> Unit = {
@@ -110,6 +118,38 @@ fun AccountScreen(
             )
         }
     }
+}
+
+@Composable
+private fun LocalFavoritesDialog(
+    count: Int,
+    onChoice: (com.bpo.gasapp.domain.repository.FavoriteMergeStrategy) -> Unit
+) {
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = { /* forzar elección */ },
+        title = { Text("Tienes favoritas guardadas") },
+        text = {
+            Text(
+                "Tienes $count gasolinera(s) favorita(s) en este dispositivo. " +
+                    "¿Qué quieres hacer con ellas al iniciar sesión?"
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                onChoice(com.bpo.gasapp.domain.repository.FavoriteMergeStrategy.MERGE)
+            }) { Text("Fusionar") }
+        },
+        dismissButton = {
+            Column {
+                TextButton(onClick = {
+                    onChoice(com.bpo.gasapp.domain.repository.FavoriteMergeStrategy.KEEP_LOCAL)
+                }) { Text("Conservar solo estas") }
+                TextButton(onClick = {
+                    onChoice(com.bpo.gasapp.domain.repository.FavoriteMergeStrategy.DISCARD_LOCAL)
+                }) { Text("Descartar y usar la cuenta") }
+            }
+        }
+    )
 }
 
 @Composable

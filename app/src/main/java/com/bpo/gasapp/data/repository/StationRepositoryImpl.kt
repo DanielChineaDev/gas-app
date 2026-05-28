@@ -112,4 +112,33 @@ class StationRepositoryImpl @Inject constructor(
         // Download remotes missing in local.
         (remoteIds - localIds).forEach { favoriteDao.add(FavoriteEntity(it)) }
     }
+
+    override suspend fun localFavoritesCount(): Int = favoriteDao.count()
+
+    override fun isLoggedIn(): Boolean = favoritesRemote.isLoggedIn()
+
+    override suspend fun resolveFavoritesOnLogin(
+        strategy: com.bpo.gasapp.domain.repository.FavoriteMergeStrategy
+    ) {
+        if (!favoritesRemote.isLoggedIn()) return
+        val remoteIds = favoritesRemote.fetchRemoteIds().toHashSet()
+        val localIds = favoriteDao.observeIds().first().toHashSet()
+
+        when (strategy) {
+            com.bpo.gasapp.domain.repository.FavoriteMergeStrategy.MERGE -> {
+                (localIds - remoteIds).forEach { favoritesRemote.add(it) }
+                (remoteIds - localIds).forEach { favoriteDao.add(FavoriteEntity(it)) }
+            }
+            com.bpo.gasapp.domain.repository.FavoriteMergeStrategy.KEEP_LOCAL -> {
+                // Local wins: push locals, drop remote-only entries.
+                (localIds - remoteIds).forEach { favoritesRemote.add(it) }
+                (remoteIds - localIds).forEach { favoritesRemote.remove(it) }
+            }
+            com.bpo.gasapp.domain.repository.FavoriteMergeStrategy.DISCARD_LOCAL -> {
+                // Remote wins: clear local, download remote.
+                favoriteDao.clear()
+                remoteIds.forEach { favoriteDao.add(FavoriteEntity(it)) }
+            }
+        }
+    }
 }

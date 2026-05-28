@@ -58,6 +58,11 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch { repository.setDynamicColor(enabled) }
     }
 
+    /** Resets onboarding so the intro tour is shown again on next launch / now. */
+    fun replayOnboarding() {
+        viewModelScope.launch { repository.setOnboardingDone(false) }
+    }
+
     fun setPriceAlert(fuel: FuelType, threshold: Double?) {
         viewModelScope.launch { repository.setPriceAlert(fuel, threshold) }
     }

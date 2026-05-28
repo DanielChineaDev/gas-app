@@ -19,7 +19,8 @@ import androidx.compose.material.icons.automirrored.filled.ListAlt
 import androidx.compose.material.icons.filled.DirectionsCar
 import androidx.compose.material.icons.filled.DirectionsCarFilled
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Route
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Savings
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
@@ -54,16 +55,18 @@ import com.bpo.gasapp.ui.account.AccountViewModel
 fun ProfileScreen(
     onLogin: () -> Unit,
     onStats: () -> Unit,
-    onPlanner: () -> Unit,
     onSaving: () -> Unit,
     onCarMode: () -> Unit,
     onVehicles: () -> Unit,
+    onAchievements: () -> Unit,
     onPremium: () -> Unit,
     onSettings: () -> Unit,
     viewModel: AccountViewModel = hiltViewModel()
 ) {
     val user by viewModel.user.collectAsStateWithLifecycle()
     val favoritesCount by viewModel.favoritesCount.collectAsStateWithLifecycle()
+    val moneySaved by viewModel.moneySaved.collectAsStateWithLifecycle()
+    val context = androidx.compose.ui.platform.LocalContext.current
     var showEditDialog by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
 
     Scaffold(
@@ -114,13 +117,22 @@ fun ProfileScreen(
                         Icon(androidx.compose.material.icons.Icons.Default.Edit, contentDescription = "Editar nombre")
                     }
                 }
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Column(Modifier.padding(16.dp)) {
-                        Text("$favoritesCount", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                        Text("Gasolineras favoritas", style = MaterialTheme.typography.labelMedium)
-                    }
+                    StatCard(
+                        value = "$favoritesCount",
+                        label = "Gasolineras favoritas",
+                        container = MaterialTheme.colorScheme.secondaryContainer,
+                        modifier = Modifier.weight(1f)
+                    )
+                    StatCard(
+                        value = "%.2f €".format(moneySaved),
+                        label = "Ahorrado con la app",
+                        container = MaterialTheme.colorScheme.tertiaryContainer,
+                        modifier = Modifier.weight(1f)
+                    )
                 }
             } else {
                 Card(
@@ -142,12 +154,26 @@ fun ProfileScreen(
             HorizontalDivider()
 
             MenuRow(Icons.AutoMirrored.Filled.ListAlt, "Mis estadísticas", onStats)
+            if (user != null) {
+                MenuRow(Icons.Default.EmojiEvents, "Mis logros", onAchievements)
+            }
             MenuRow(Icons.Default.DirectionsCarFilled, "Mis vehículos", onVehicles)
-            MenuRow(Icons.Default.Route, "Planificar ruta", onPlanner)
             MenuRow(Icons.Default.Savings, "Modo ahorro", onSaving)
             MenuRow(Icons.Default.DirectionsCar, "Modo coche", onCarMode)
             MenuRow(Icons.Default.Star, "Quitar anuncios", onPremium)
             MenuRow(Icons.Default.Settings, "Ajustes", onSettings)
+
+            HorizontalDivider()
+
+            SupportCard(
+                onKofi = {
+                    val intent = android.content.Intent(
+                        android.content.Intent.ACTION_VIEW,
+                        android.net.Uri.parse(KOFI_URL)
+                    )
+                    kotlin.runCatching { context.startActivity(intent) }
+                }
+            )
 
             if (user != null) {
                 OutlinedButton(onClick = viewModel::logout, modifier = Modifier.fillMaxWidth()) {
@@ -187,6 +213,59 @@ private fun EditNameDialog(current: String, onConfirm: (String) -> Unit, onDismi
             androidx.compose.material3.TextButton(onClick = onDismiss) { Text("Cancelar") }
         }
     )
+}
+
+private const val KOFI_URL = "https://ko-fi.com/josedanielchinea"
+
+@Composable
+private fun StatCard(
+    value: String,
+    label: String,
+    container: androidx.compose.ui.graphics.Color,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier,
+        colors = CardDefaults.cardColors(containerColor = container)
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Text(value, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            Text(label, style = MaterialTheme.typography.labelMedium)
+        }
+    }
+}
+
+@Composable
+private fun SupportCard(onKofi: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onKofi),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+    ) {
+        Row(
+            Modifier.fillMaxWidth().padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text("☕", style = MaterialTheme.typography.headlineMedium)
+            Column(Modifier.weight(1f)) {
+                Text(
+                    "Apoya el desarrollo",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    "GasApp es gratuita. Invítame a un café en Ko-fi para seguir mejorándola.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Icon(
+                androidx.compose.material.icons.Icons.Default.Favorite,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary
+            )
+        }
+    }
 }
 
 @Composable

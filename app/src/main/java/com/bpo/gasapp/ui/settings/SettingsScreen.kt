@@ -96,6 +96,14 @@ fun SettingsScreen(
                 alertThreshold = settings.alertThreshold,
                 onSave = viewModel::setPriceAlert
             )
+
+            androidx.compose.material3.HorizontalDivider()
+
+            Text("Ayuda", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            androidx.compose.material3.OutlinedButton(
+                onClick = { viewModel.replayOnboarding() },
+                modifier = Modifier.fillMaxWidth()
+            ) { Text("Volver a ver tour inicial") }
         }
     }
 }

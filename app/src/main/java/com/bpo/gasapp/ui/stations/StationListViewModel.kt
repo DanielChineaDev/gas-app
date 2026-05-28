@@ -17,9 +17,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -145,9 +146,13 @@ class StationListViewModel @Inject constructor(
         repository.observeStations()
             .onEach { if (it.isEmpty() && !isRefreshing.value) refresh() }
             .launchIn(viewModelScope)
-        viewModelScope.launch {
-            filters.value = filters.value.copy(fuel = settingsRepository.settings.first().defaultFuel)
-        }
+        // Keep the filter fuel in sync with the default fuel. Changing the
+        // selected vehicle updates the default fuel, which propagates here.
+        settingsRepository.settings
+            .map { it.defaultFuel }
+            .distinctUntilChanged()
+            .onEach { fuel -> filters.value = filters.value.copy(fuel = fuel) }
+            .launchIn(viewModelScope)
         refreshLocation()
     }
 
