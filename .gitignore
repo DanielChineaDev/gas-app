@@ -15,3 +15,6 @@ app/google-services.json
 keystore.properties
 *.keystore
 *.jks
+
+# Empaquetado de la landing (se genera con scripts/package-landing.sh)
+landing-ionos.zip
