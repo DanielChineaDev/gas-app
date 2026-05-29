@@ -182,14 +182,6 @@ fun MapScreen(
             ) {
                 FuelDropdownChip(selected = state.filters.fuel, onSelect = viewModel::selectFuel)
                 FilterChip(
-                    selected = state.filters.hasActiveConstraints,
-                    onClick = { showFilters = true },
-                    label = { Text("Filtros") },
-                    leadingIcon = {
-                        Icon(Icons.Default.FilterList, contentDescription = null, modifier = Modifier.size(16.dp))
-                    }
-                )
-                FilterChip(
                     selected = state.filters.onlyFavorites,
                     onClick = { viewModel.updateFilters(state.filters.copy(onlyFavorites = !state.filters.onlyFavorites)) },
                     label = { Text("Favoritas") },
@@ -200,6 +192,14 @@ fun MapScreen(
                             modifier = Modifier.size(16.dp),
                             tint = if (state.filters.onlyFavorites) FavoriteRed else androidx.compose.material3.LocalContentColor.current
                         )
+                    }
+                )
+                FilterChip(
+                    selected = state.filters.hasActiveConstraints,
+                    onClick = { showFilters = true },
+                    label = { Text("Filtros") },
+                    leadingIcon = {
+                        Icon(Icons.Default.FilterList, contentDescription = null, modifier = Modifier.size(16.dp))
                     }
                 )
             }
@@ -250,6 +250,7 @@ fun MapScreen(
             availableBrands = emptyList(),
             hasLocation = hasPermission,
             showDistance = false,
+            showSort = false,
             onChange = viewModel::updateFilters,
             onDismiss = { showFilters = false }
         )

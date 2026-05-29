@@ -35,7 +35,8 @@ fun FiltersSheet(
     hasLocation: Boolean,
     onChange: (StationFilters) -> Unit,
     onDismiss: () -> Unit,
-    showDistance: Boolean = true
+    showDistance: Boolean = true,
+    showSort: Boolean = true
 ) {
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
@@ -60,19 +61,20 @@ fun FiltersSheet(
                 }
             }
 
-            // ── Ordenar por ──────────────────────────────────────────────────
-            Text("Ordenar por", fontWeight = FontWeight.SemiBold)
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                SortMode.entries.forEach { mode ->
-                    FilterChip(
-                        selected = filters.sortMode == mode,
-                        onClick = { onChange(filters.copy(sortMode = mode)) },
-                        label = { Text(mode.label) }
-                    )
+            // ── Ordenar por (no aplica en el mapa) ───────────────────────────
+            if (showSort) {
+                Text("Ordenar por", fontWeight = FontWeight.SemiBold)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    SortMode.entries.forEach { mode ->
+                        FilterChip(
+                            selected = filters.sortMode == mode,
+                            onClick = { onChange(filters.copy(sortMode = mode)) },
+                            label = { Text(mode.label) }
+                        )
+                    }
                 }
+                HorizontalDivider()
             }
-
-            HorizontalDivider()
 
             // ── Precio máximo ────────────────────────────────────────────────
             Row(

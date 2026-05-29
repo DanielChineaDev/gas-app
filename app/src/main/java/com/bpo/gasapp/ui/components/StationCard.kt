@@ -102,18 +102,7 @@ fun StationCard(
                 }
             }
 
-            if (station.isFavorite) {
-                Icon(
-                    imageVector = Icons.Default.Favorite,
-                    contentDescription = "En favoritas",
-                    tint = FavoriteRed,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(Modifier.size(6.dp))
-            }
-
-            PricePill(price, zoneAverage)
-
+            // Único corazón, junto al precio: indica y permite alternar favorito.
             val favScale by animateFloatAsState(
                 targetValue = if (station.isFavorite) 1.15f else 1f,
                 animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy),
@@ -129,6 +118,8 @@ fun StationCard(
                     modifier = Modifier.scale(favScale)
                 )
             }
+
+            PricePill(price, zoneAverage)
         }
     }
 }
