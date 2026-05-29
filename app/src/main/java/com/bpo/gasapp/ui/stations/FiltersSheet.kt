@@ -36,7 +36,8 @@ fun FiltersSheet(
     onChange: (StationFilters) -> Unit,
     onDismiss: () -> Unit,
     showDistance: Boolean = true,
-    showSort: Boolean = true
+    showSort: Boolean = true,
+    showOnlyFavoritesToggle: Boolean = true
 ) {
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(
@@ -151,16 +152,18 @@ fun FiltersSheet(
                     onCheckedChange = { onChange(filters.copy(openNowOnly = it)) }
                 )
             }
-            Row(
-                Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("Solo favoritas", fontWeight = FontWeight.SemiBold)
-                Switch(
-                    checked = filters.onlyFavorites,
-                    onCheckedChange = { onChange(filters.copy(onlyFavorites = it)) }
-                )
+            if (showOnlyFavoritesToggle) {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Solo favoritas", fontWeight = FontWeight.SemiBold)
+                    Switch(
+                        checked = filters.onlyFavorites,
+                        onCheckedChange = { onChange(filters.copy(onlyFavorites = it)) }
+                    )
+                }
             }
 
             // ── Marca ────────────────────────────────────────────────────────

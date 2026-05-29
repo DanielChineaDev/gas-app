@@ -41,9 +41,9 @@ private val LightColors = lightColorScheme(
     tertiaryContainer = Color(0xFFFFDDB8),
     onTertiaryContainer = Color(0xFF2A1700),
     error = BrandRed,
-    background = Color(0xFFF7FBF6),
+    background = Color(0xFFF7F9FC),
     surface = Color(0xFFFFFFFF),
-    surfaceVariant = Color(0xFFE3E9E3)
+    surfaceVariant = Color(0xFFE4E8F0)
 )
 
 private val DarkColors = darkColorScheme(
@@ -60,9 +60,9 @@ private val DarkColors = darkColorScheme(
     tertiaryContainer = Color(0xFF643F00),
     onTertiaryContainer = Color(0xFFFFDDB8),
     error = Color(0xFFFFB4AB),
-    background = Color(0xFF0F1511),
-    surface = Color(0xFF161D18),
-    surfaceVariant = Color(0xFF3F4942)
+    background = Color(0xFF0F141B),
+    surface = Color(0xFF161B22),
+    surfaceVariant = Color(0xFF3A4150)
 )
 
 @Composable

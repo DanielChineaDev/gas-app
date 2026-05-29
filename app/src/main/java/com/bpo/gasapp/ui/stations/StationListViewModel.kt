@@ -214,13 +214,13 @@ class StationListViewModel @Inject constructor(
 private val DIACRITICS = Regex("\\p{InCombiningDiacriticalMarks}+")
 
 /** Quita tildes y pasa a minúsculas para que el buscador sea tolerante. */
-private fun String.normalizeForSearch(): String =
+internal fun String.normalizeForSearch(): String =
     java.text.Normalizer.normalize(this, java.text.Normalizer.Form.NFD)
         .replace(DIACRITICS, "")
         .lowercase()
 
 /** "REPSOL S.A." -> "Repsol S.A." para limpiar las marcas del dataset. */
-private fun String.titleCase(): String =
+internal fun String.titleCase(): String =
     lowercase().split(' ').joinToString(" ") { word ->
         word.replaceFirstChar { c -> if (c.isLetter()) c.uppercaseChar() else c }
     }

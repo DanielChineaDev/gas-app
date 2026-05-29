@@ -56,7 +56,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 
 // Cada N gasolineras insertamos un banner in-feed en la lista.
-private const val AD_INTERVAL = 8
+internal const val AD_INTERVAL = 8
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
@@ -195,7 +195,7 @@ fun StationListScreen(
 // ─── Cabecera compacta ────────────────────────────────────────────────────────
 
 @Composable
-private fun CompactSearchRow(
+internal fun CompactSearchRow(
     query: String,
     onQueryChange: (String) -> Unit,
     onFilters: () -> Unit,
@@ -238,7 +238,7 @@ private fun CompactSearchRow(
 // ─── Barra de filtros compacta con desplegables ───────────────────────────────
 
 @Composable
-private fun CompactFilterBar(
+internal fun CompactFilterBar(
     fuel: FuelType,
     sortMode: SortMode,
     maxDistanceKm: Int?,
@@ -344,7 +344,7 @@ private fun DistanceIndicatorChip(maxDistanceKm: Int?) {
 // ─── Tarjeta "La más barata" ──────────────────────────────────────────────────
 
 @Composable
-private fun HeroCard(
+internal fun HeroCard(
     station: com.bpo.gasapp.domain.model.Station,
     fuel: FuelType,
     zoneAverage: Double?,
@@ -405,7 +405,7 @@ private fun HeroCard(
 // ─── Aviso de ubicación ───────────────────────────────────────────────────────
 
 @Composable
-private fun LocationBanner(onEnable: () -> Unit) {
+internal fun LocationBanner(onEnable: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 2.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -421,14 +421,14 @@ private fun LocationBanner(onEnable: () -> Unit) {
 // ─── Estados de la lista ──────────────────────────────────────────────────────
 
 @Composable
-private fun CenteredLoader() {
+internal fun CenteredLoader() {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         CircularProgressIndicator()
     }
 }
 
 @Composable
-private fun CenteredMessage(message: String) {
+internal fun CenteredMessage(message: String) {
     Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
         Text(message, style = MaterialTheme.typography.bodyLarge)
     }
