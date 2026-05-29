@@ -33,6 +33,8 @@ class MainActivity : ComponentActivity() {
         val splash = installSplashScreen()
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        // Consentimiento de privacidad (RGPD/UMP) antes de inicializar AdMob.
+        com.bpo.gasapp.ui.ads.AdsConsentManager.gatherConsentAndInitialize(this)
         setContent {
             val settingsViewModel: SettingsViewModel = hiltViewModel()
             val settings by settingsViewModel.settings.collectAsStateWithLifecycle()
