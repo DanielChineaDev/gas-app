@@ -50,6 +50,7 @@ muestra de forma rápida y clara para que **ahorres en cada repostaje** sin comp
 
 - 🟢 **Gratis** y sin registro obligatorio
 - 🗺️ Cobertura de **toda España** (península, Baleares y Canarias)
+- ⛽ **8 carburantes + AdBlue**: Gasolina 95/98, Diésel, Diésel Premium, GLP, GNC, GNL, Hidrógeno
 - ⚡ Diseño moderno en **Jetpack Compose** y arquitectura limpia
 
 ---
@@ -221,8 +222,9 @@ sincronizar favoritas. **No se venden datos.** Política completa en
 ## 🗺️ Roadmap
 
 - [x] v1.0 — Mapa, lista, favoritas, alertas, estadísticas, multi-vehículo
+- [x] GLP, GNC, GNL, Hidrógeno y AdBlue (datos oficiales)
 - [ ] v1.1 — Reseñas de gasolineras con moderación (UGC compliance)
-- [ ] Más combustibles (GLP, GNC) y planificador de ruta
+- [ ] v1.2 — Puntos de carga eléctricos (Open Charge Map)
 
 ---
 
