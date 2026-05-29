@@ -17,6 +17,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.bpo.gasapp.domain.model.ThemeMode
 import com.bpo.gasapp.ui.navigation.GasNavHost
 import com.bpo.gasapp.ui.onboarding.OnboardingScreen
@@ -24,6 +26,7 @@ import com.bpo.gasapp.ui.settings.SettingsViewModel
 import com.bpo.gasapp.ui.theme.GasAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
+@OptIn(ExperimentalPermissionsApi::class)
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,6 +47,7 @@ class MainActivity : ComponentActivity() {
             }
 
             GasAppTheme(darkTheme = darkTheme, dynamicColor = settings.dynamicColor) {
+                // Pedir permiso de notificaciones (Android 13+)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     val launcher = rememberLauncherForActivityResult(
                         ActivityResultContracts.RequestPermission()
@@ -52,6 +56,17 @@ class MainActivity : ComponentActivity() {
                         launcher.launch(Manifest.permission.POST_NOTIFICATIONS)
                     }
                 }
+
+                // Pedir permiso de ubicación automáticamente después del onboarding
+                val locationPermission = rememberMultiplePermissionsState(
+                    listOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+                )
+                LaunchedEffect(onboardingDone) {
+                    if (onboardingDone == true && !locationPermission.allPermissionsGranted) {
+                        locationPermission.launchMultiplePermissionRequest()
+                    }
+                }
+
                 Surface(modifier = Modifier.fillMaxSize()) {
                     when (onboardingDone) {
                         null -> Unit

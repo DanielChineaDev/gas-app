@@ -55,7 +55,6 @@ fun StationDetailScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val history by viewModel.history.collectAsStateWithLifecycle()
-    val reviews by viewModel.reviews.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     Scaffold(
@@ -97,9 +96,6 @@ fun StationDetailScreen(
                 else -> StationDetailContent(
                     station = state.station!!,
                     history = history,
-                    reviews = reviews,
-                    canReview = viewModel.canReview,
-                    onSubmitReview = viewModel::submitReview,
                     onNavigate = { launchNavigation(context, state.station!!) }
                 )
             }
@@ -111,9 +107,6 @@ fun StationDetailScreen(
 private fun StationDetailContent(
     station: Station,
     history: List<com.bpo.gasapp.domain.model.PricePoint>,
-    reviews: List<com.bpo.gasapp.domain.model.Review>,
-    canReview: Boolean,
-    onSubmitReview: (Int, String) -> Unit,
     onNavigate: () -> Unit
 ) {
     Column(
@@ -148,42 +141,6 @@ private fun StationDetailContent(
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text("Historial de precios", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 PriceHistoryChart(history)
-            }
-        }
-
-        Card(Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                val avg = if (reviews.isNotEmpty()) reviews.map { it.rating }.average() else null
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Reseñas", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                    if (avg != null) {
-                        Text(
-                            "  ★ %.1f (${reviews.size})".format(avg),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
-                if (canReview) {
-                    ReviewInput(onSubmit = onSubmitReview)
-                } else {
-                    Text(
-                        "Inicia sesión para dejar una reseña.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                reviews.forEach { review ->
-                    Column(Modifier.padding(top = 8.dp)) {
-                        Text(
-                            "${"★".repeat(review.rating)}${"☆".repeat(5 - review.rating)}  ${review.userName}",
-                            style = MaterialTheme.typography.labelLarge
-                        )
-                        if (review.comment.isNotBlank()) {
-                            Text(review.comment, style = MaterialTheme.typography.bodyMedium)
-                        }
-                    }
-                }
             }
         }
 

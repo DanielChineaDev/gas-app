@@ -3,9 +3,7 @@ package com.bpo.gasapp.ui.detail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bpo.gasapp.data.remote.ReviewRemoteDataSource
 import com.bpo.gasapp.domain.model.PricePoint
-import com.bpo.gasapp.domain.model.Review
 import com.bpo.gasapp.domain.model.Station
 import com.bpo.gasapp.domain.repository.StationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,7 +24,6 @@ data class StationDetailUiState(
 @HiltViewModel
 class StationDetailViewModel @Inject constructor(
     private val repository: StationRepository,
-    private val reviewRemote: ReviewRemoteDataSource,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -41,19 +38,6 @@ class StationDetailViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
-
-    val reviews: StateFlow<List<Review>> =
-        reviewRemote.observeReviews(stationId).stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = emptyList()
-        )
-
-    val canReview: Boolean get() = reviewRemote.isLoggedIn()
-
-    fun submitReview(rating: Int, comment: String) {
-        viewModelScope.launch { reviewRemote.submitReview(stationId, rating, comment) }
-    }
 
     init {
         load()

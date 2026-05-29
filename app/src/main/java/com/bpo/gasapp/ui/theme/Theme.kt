@@ -25,10 +25,10 @@ private val BrandOrangeLight = Color(0xFFFFB74D)
 private val BrandRed = Color(0xFFD32F2F)
 
 private val LightColors = lightColorScheme(
-    primary = BrandGreen,
+    primary = BrandBlue,
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFB8F0C6),
-    onPrimaryContainer = Color(0xFF00210E),
+    primaryContainer = Color(0xFFE3F2FD),
+    onPrimaryContainer = Color(0xFF001D35),
     secondary = BrandBlue,
     onSecondary = Color.White,
     secondaryContainer = Color(0xFFD1E4FF),
@@ -44,10 +44,10 @@ private val LightColors = lightColorScheme(
 )
 
 private val DarkColors = darkColorScheme(
-    primary = BrandGreenLight,
-    onPrimary = Color(0xFF003919),
-    primaryContainer = Color(0xFF1B5E33),
-    onPrimaryContainer = Color(0xFFB8F0C6),
+    primary = BrandBlueLight,
+    onPrimary = Color(0xFF001C45),
+    primaryContainer = Color(0xFF1565C0),
+    onPrimaryContainer = Color(0xFFC7E0FF),
     secondary = BrandBlueLight,
     onSecondary = Color(0xFF003258),
     secondaryContainer = Color(0xFF00497D),
