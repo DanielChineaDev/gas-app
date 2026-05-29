@@ -45,4 +45,17 @@ val MIGRATION_4_5 = object : Migration(4, 5) {
     }
 }
 
-val ALL_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+/** v5 -> v6: nuevos productos (GLP, GNC, GNL, hidrógeno, AdBlue) en estaciones. */
+val MIGRATION_5_6 = object : Migration(5, 6) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE `stations` ADD COLUMN `glp` REAL")
+        db.execSQL("ALTER TABLE `stations` ADD COLUMN `gnc` REAL")
+        db.execSQL("ALTER TABLE `stations` ADD COLUMN `gnl` REAL")
+        db.execSQL("ALTER TABLE `stations` ADD COLUMN `hidrogeno` REAL")
+        db.execSQL("ALTER TABLE `stations` ADD COLUMN `adblue` REAL")
+    }
+}
+
+val ALL_MIGRATIONS = arrayOf(
+    MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6
+)

@@ -29,5 +29,10 @@ data class EstacionDto(
     @SerialName("Precio Gasolina 95 E5") val gasolina95: String = "",
     @SerialName("Precio Gasolina 98 E5") val gasolina98: String = "",
     @SerialName("Precio Gasoleo A") val diesel: String = "",
-    @SerialName("Precio Gasoleo Premium") val dieselPremium: String = ""
+    @SerialName("Precio Gasoleo Premium") val dieselPremium: String = "",
+    @SerialName("Precio Gases licuados del petróleo") val glp: String = "",
+    @SerialName("Precio Gas Natural Comprimido") val gnc: String = "",
+    @SerialName("Precio Gas Natural Licuado") val gnl: String = "",
+    @SerialName("Precio Hidrogeno") val hidrogeno: String = "",
+    @SerialName("Precio Adblue") val adblue: String = ""
 )

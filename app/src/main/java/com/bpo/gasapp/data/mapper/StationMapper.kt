@@ -27,6 +27,11 @@ fun EstacionDto.toEntity(updatedAt: Long): StationEntity? {
         gasolina98 = gasolina98.toSpanishDoubleOrNull(),
         diesel = diesel.toSpanishDoubleOrNull(),
         dieselPremium = dieselPremium.toSpanishDoubleOrNull(),
+        glp = glp.toSpanishDoubleOrNull(),
+        gnc = gnc.toSpanishDoubleOrNull(),
+        gnl = gnl.toSpanishDoubleOrNull(),
+        hidrogeno = hidrogeno.toSpanishDoubleOrNull(),
+        adblue = adblue.toSpanishDoubleOrNull(),
         lastUpdate = updatedAt
     )
 }
@@ -37,6 +42,11 @@ fun StationEntity.toDomain(isFavorite: Boolean = false): Station {
         gasolina98?.let { put(FuelType.GASOLINA_98, it) }
         diesel?.let { put(FuelType.DIESEL, it) }
         dieselPremium?.let { put(FuelType.DIESEL_PREMIUM, it) }
+        glp?.let { put(FuelType.GLP, it) }
+        gnc?.let { put(FuelType.GNC, it) }
+        gnl?.let { put(FuelType.GNL, it) }
+        hidrogeno?.let { put(FuelType.HIDROGENO, it) }
+        adblue?.let { put(FuelType.ADBLUE, it) }
     }
     return Station(
         id = id,

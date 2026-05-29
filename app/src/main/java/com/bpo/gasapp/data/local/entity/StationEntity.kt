@@ -18,5 +18,10 @@ data class StationEntity(
     val gasolina98: Double?,
     val diesel: Double?,
     val dieselPremium: Double?,
+    val glp: Double? = null,
+    val gnc: Double? = null,
+    val gnl: Double? = null,
+    val hidrogeno: Double? = null,
+    val adblue: Double? = null,
     val lastUpdate: Long
 )
