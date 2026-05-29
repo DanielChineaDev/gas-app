@@ -28,6 +28,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -76,18 +77,34 @@ fun FuelSavingScreen(
                 style = MaterialTheme.typography.bodySmall
             )
 
+            // Estado local de texto para que escribir y borrar sea fluido y no dependa
+            // del flujo asíncrono del ViewModel (que descartaba pulsaciones).
+            var litersText by androidx.compose.runtime.saveable.rememberSaveable {
+                androidx.compose.runtime.mutableStateOf(state.tankLiters.toString())
+            }
+            var consumptionText by androidx.compose.runtime.saveable.rememberSaveable {
+                androidx.compose.runtime.mutableStateOf(state.consumption.toString())
+            }
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(
-                    value = state.tankLiters.toString(),
-                    onValueChange = { it.toIntOrNull()?.let(viewModel::setLiters) },
+                    value = litersText,
+                    onValueChange = { input ->
+                        val digits = input.filter { it.isDigit() }.take(3)
+                        litersText = digits
+                        digits.toIntOrNull()?.let(viewModel::setLiters)
+                    },
                     label = { Text("Litros") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.weight(1f)
                 )
                 OutlinedTextField(
-                    value = state.consumption.toString(),
-                    onValueChange = { it.replace(',', '.').toDoubleOrNull()?.let(viewModel::setConsumption) },
+                    value = consumptionText,
+                    onValueChange = { input ->
+                        val filtered = input.replace(',', '.').filter { it.isDigit() || it == '.' }
+                        consumptionText = filtered
+                        filtered.toDoubleOrNull()?.let(viewModel::setConsumption)
+                    },
                     label = { Text("L/100km") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),

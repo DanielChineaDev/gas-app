@@ -262,15 +262,25 @@ private fun SortAndAverageBar(
 
 @Composable
 private fun SearchBar(query: String, onQueryChange: (String) -> Unit) {
+    // El texto se mantiene en estado local para que la escritura/borrado sea
+    // instantáneo y no dependa del flujo asíncrono del ViewModel (que descartaba
+    // pulsaciones). Solo notificamos al ViewModel para filtrar.
+    var text by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(query) }
     androidx.compose.material3.OutlinedTextField(
-        value = query,
-        onValueChange = onQueryChange,
+        value = text,
+        onValueChange = {
+            text = it
+            onQueryChange(it)
+        },
         modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
         placeholder = { Text("Buscar por marca, ciudad...") },
         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
         trailingIcon = {
-            if (query.isNotEmpty()) {
-                IconButton(onClick = { onQueryChange("") }) {
+            if (text.isNotEmpty()) {
+                IconButton(onClick = {
+                    text = ""
+                    onQueryChange("")
+                }) {
                     Icon(Icons.Default.Close, contentDescription = "Limpiar")
                 }
             }

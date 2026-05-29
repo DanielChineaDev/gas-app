@@ -25,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -59,9 +60,18 @@ fun TankComparatorScreen(
             modifier = Modifier.padding(padding).fillMaxSize().padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            // Estado local de texto: permite borrar el campo por completo y escribir
+            // con fluidez sin depender del flujo asíncrono del ViewModel.
+            var litersText by androidx.compose.runtime.saveable.rememberSaveable {
+                androidx.compose.runtime.mutableStateOf(state.liters.toString())
+            }
             OutlinedTextField(
-                value = state.liters.toString(),
-                onValueChange = { it.toIntOrNull()?.let(viewModel::setLiters) },
+                value = litersText,
+                onValueChange = { input ->
+                    val digits = input.filter { it.isDigit() }.take(3)
+                    litersText = digits
+                    digits.toIntOrNull()?.let(viewModel::setLiters)
+                },
                 label = { Text("Litros del depósito") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
