@@ -56,9 +56,6 @@ import com.bpo.gasapp.ui.components.StationCard
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 
-// Opciones rápidas de distancia (null = sin límite)
-private val DISTANCE_OPTIONS: List<Int?> = listOf(1, 5, 10, 25, null)
-
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun StationListScreen(
@@ -97,10 +94,7 @@ fun StationListScreen(
                 maxDistanceKm = state.filters.maxDistanceKm,
                 zoneAverage = state.zoneAverage,
                 onFuelSelect = viewModel::selectFuel,
-                onSortSelect = viewModel::setSortMode,
-                onDistanceSelect = { km ->
-                    viewModel.updateFilters(state.filters.copy(maxDistanceKm = km))
-                }
+                onSortSelect = viewModel::setSortMode
             )
 
             androidx.compose.animation.AnimatedVisibility(visible = !state.hasLocation) {
@@ -239,8 +233,7 @@ private fun CompactFilterBar(
     maxDistanceKm: Int?,
     zoneAverage: Double?,
     onFuelSelect: (FuelType) -> Unit,
-    onSortSelect: (SortMode) -> Unit,
-    onDistanceSelect: (Int?) -> Unit
+    onSortSelect: (SortMode) -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -252,7 +245,7 @@ private fun CompactFilterBar(
     ) {
         FuelDropdownChip(selected = fuel, onSelect = onFuelSelect)
         SortDropdownChip(selected = sortMode, onSelect = onSortSelect)
-        DistanceDropdownChip(selected = maxDistanceKm, onSelect = onDistanceSelect)
+        DistanceIndicatorChip(maxDistanceKm = maxDistanceKm)
 
         if (zoneAverage != null) {
             VerticalDivider(modifier = Modifier.height(24.dp))
@@ -296,7 +289,8 @@ private fun SortDropdownChip(selected: SortMode, onSelect: (SortMode) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     Box {
         FilterChip(
-            selected = selected != SortMode.PRICE,
+            // El modo de ordenación está siempre activo → siempre azul/seleccionado.
+            selected = true,
             onClick = { expanded = true },
             label = { Text(selected.label) },
             trailingIcon = {
@@ -317,34 +311,23 @@ private fun SortDropdownChip(selected: SortMode, onSelect: (SortMode) -> Unit) {
     }
 }
 
+/**
+ * Indicador visual de distancia: muestra el valor activo pero no permite
+ * modificarlo directamente. La distancia solo se ajusta desde los filtros
+ * avanzados (botón de filtros en la cabecera).
+ */
 @Composable
-private fun DistanceDropdownChip(selected: Int?, onSelect: (Int?) -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
-    val label = selected?.let { "$it km" } ?: "Sin límite"
-    Box {
-        FilterChip(
-            selected = selected != null,
-            onClick = { expanded = true },
-            label = { Text(label) },
-            leadingIcon = {
-                Icon(Icons.Default.LocationOn, contentDescription = null, modifier = Modifier.size(16.dp))
-            },
-            trailingIcon = {
-                Icon(Icons.Default.ExpandMore, contentDescription = null, modifier = Modifier.size(16.dp))
-            }
-        )
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            DISTANCE_OPTIONS.forEach { km ->
-                DropdownMenuItem(
-                    text = { Text(km?.let { "$it km" } ?: "Sin límite") },
-                    onClick = { onSelect(km); expanded = false },
-                    leadingIcon = if (km == selected) {
-                        { Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp)) }
-                    } else null
-                )
-            }
+private fun DistanceIndicatorChip(maxDistanceKm: Int?) {
+    val label = maxDistanceKm?.let { "$it km" } ?: "Sin límite"
+    FilterChip(
+        selected = maxDistanceKm != null,
+        // Solo es indicador visual; no abre ningún selector.
+        onClick = {},
+        label = { Text(label) },
+        leadingIcon = {
+            Icon(Icons.Default.LocationOn, contentDescription = null, modifier = Modifier.size(16.dp))
         }
-    }
+    )
 }
 
 // ─── Tarjeta "La más barata" ──────────────────────────────────────────────────
