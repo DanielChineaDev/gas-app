@@ -13,6 +13,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.core.graphics.drawable.toBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -155,6 +157,52 @@ fun BrandLogo(brand: String, size: Int = 44, modifier: Modifier = Modifier) {
         )
         // 3) Respaldo: avatar de letra de marca (no infractor).
         else -> BrandAvatar(brand = brand, size = size, modifier = modifier)
+    }
+}
+
+/**
+ * Descarga (con caché de Coil) el icono de marca como bitmap, para poder
+ * dibujarlo de forma SÍNCRONA en los marcadores del mapa (la carga asíncrona
+ * con subcomposición crashea el renderizador de marcadores).
+ */
+suspend fun loadBrandBitmap(
+    context: android.content.Context,
+    brand: String
+): androidx.compose.ui.graphics.ImageBitmap? {
+    val url = brandfetchUrl(brand) ?: return null
+    val result = coil.Coil.imageLoader(context).execute(
+        coil.request.ImageRequest.Builder(context)
+            .data(url)
+            .allowHardware(false)
+            .size(96)
+            .build()
+    )
+    val drawable = (result as? coil.request.SuccessResult)?.drawable ?: return null
+    return drawable.toBitmap().asImageBitmap()
+}
+
+/**
+ * Logo de marca SÍNCRONO (sin red ni subcomposición): dibuja el [bitmap] ya
+ * cargado o, si es null, el avatar de letra. Seguro para los marcadores.
+ */
+@Composable
+fun BrandLogoStatic(
+    brand: String,
+    bitmap: androidx.compose.ui.graphics.ImageBitmap?,
+    size: Int = 34,
+    modifier: Modifier = Modifier
+) {
+    if (bitmap != null) {
+        LogoFrame(size, modifier) {
+            Image(
+                bitmap = bitmap,
+                contentDescription = brand,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Fit
+            )
+        }
+    } else {
+        BrandAvatar(brand = brand, size = size, modifier = modifier)
     }
 }
 

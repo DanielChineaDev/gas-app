@@ -79,6 +79,19 @@ fun MapScreen(
     var showFilters by remember { mutableStateOf(false) }
     val context = androidx.compose.ui.platform.LocalContext.current
 
+    // Pre-carga de logos de marca a bitmap (para dibujarlos en los marcadores
+    // de forma síncrona, sin subcomposición). Se cachean por Coil.
+    val brandLogos = remember { androidx.compose.runtime.mutableStateMapOf<String, androidx.compose.ui.graphics.ImageBitmap>() }
+    val visibleBrands = remember(state.stations) { state.stations.map { it.brand }.distinct() }
+    LaunchedEffect(visibleBrands) {
+        visibleBrands.forEach { brand ->
+            val key = com.bpo.gasapp.ui.components.normalizeBrandKey(brand)
+            if (!brandLogos.containsKey(key)) {
+                com.bpo.gasapp.ui.components.loadBrandBitmap(context, brand)?.let { brandLogos[key] = it }
+            }
+        }
+    }
+
     val locationPermissions = rememberMultiplePermissionsState(
         listOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
     )
@@ -129,7 +142,7 @@ fun MapScreen(
         }
     }
 
-    val clusterItems = rememberClusterItems(state.stations, state.filters.fuel)
+    val clusterItems = rememberClusterItems(state.stations, state.filters.fuel, brandLogos.size)
 
     Box(Modifier.fillMaxSize()) {
         GoogleMap(
@@ -147,7 +160,12 @@ fun MapScreen(
                 },
                 clusterContent = { cluster -> ClusterBubble(cluster.size) },
                 clusterItemContent = { item ->
-                    PriceMarker(item.station.brand, item.markerLabel, item.station.isFavorite)
+                    PriceMarker(
+                        item.station.brand,
+                        item.markerLabel,
+                        item.station.isFavorite,
+                        brandLogos[com.bpo.gasapp.ui.components.normalizeBrandKey(item.station.brand)]
+                    )
                 }
             )
         }
@@ -371,7 +389,12 @@ private fun StationSheet(
 }
 
 @Composable
-private fun PriceMarker(name: String, label: String, isFavorite: Boolean) {
+private fun PriceMarker(
+    name: String,
+    label: String,
+    isFavorite: Boolean,
+    logo: androidx.compose.ui.graphics.ImageBitmap?
+) {
     // Píldora estilo referencia: logo cuadrado a la izquierda; a la derecha,
     // nombre arriba y precio (destacado) debajo.
     androidx.compose.foundation.layout.Row(
@@ -383,10 +406,9 @@ private fun PriceMarker(name: String, label: String, isFavorite: Boolean) {
             .padding(5.dp),
         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
     ) {
-        // En los marcadores NO se puede usar carga asíncrona (subcomposición):
-        // el renderizador de marcadores de Maps la captura a bitmap y crashea.
-        // Usamos el avatar de marca sincrono; los logos reales van en la lista.
-        com.bpo.gasapp.ui.components.BrandAvatar(brand = name, size = 34)
+        // Logo SÍNCRONO (bitmap precargado) para no crashear el renderizador
+        // de marcadores; si aún no ha cargado, muestra el avatar de letra.
+        com.bpo.gasapp.ui.components.BrandLogoStatic(brand = name, bitmap = logo, size = 34)
         androidx.compose.foundation.layout.Spacer(androidx.compose.ui.Modifier.size(7.dp))
         androidx.compose.foundation.layout.Column {
             androidx.compose.material3.Text(
@@ -446,9 +468,10 @@ private fun ClusterBubble(count: Int) {
 @Composable
 private fun rememberClusterItems(
     stations: List<com.bpo.gasapp.domain.model.Station>,
-    fuel: FuelType
+    fuel: FuelType,
+    logoVersion: Int
 ): List<StationClusterItem> =
-    androidx.compose.runtime.remember(stations, fuel) {
+    androidx.compose.runtime.remember(stations, fuel, logoVersion) {
         stations.map { station ->
             val price = station.priceOf(fuel)
             val label = price?.let { "%.3f".format(it) } ?: "—"
