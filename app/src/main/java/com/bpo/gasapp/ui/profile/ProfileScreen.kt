@@ -436,6 +436,13 @@ private fun AboutSection(onOpenUrl: (String) -> Unit, onEmail: () -> Unit) {
                         "mostrarte gasolineras cercanas y no se rastrea en segundo plano. La cuenta es " +
                         "opcional y no vendemos tus datos."
                 )
+                AboutBlock(
+                    "Aviso legal",
+                    "Los nombres, marcas y logotipos pertenecen a sus respectivos propietarios y se " +
+                        "muestran únicamente como identificador de cada estación de servicio. Esta " +
+                        "aplicación no está afiliada, asociada ni respaldada oficialmente por ninguna " +
+                        "compañía petrolera."
+                )
 
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     androidx.compose.material3.TextButton(onClick = { onOpenUrl("https://landing.gasapp.cloud") }) {

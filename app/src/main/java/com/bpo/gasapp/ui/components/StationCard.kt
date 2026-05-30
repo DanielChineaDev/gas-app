@@ -67,7 +67,7 @@ fun StationCard(
             modifier = Modifier.fillMaxWidth().padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            BrandAvatar(brand = station.brand)
+            BrandLogo(brand = station.brand)
             Spacer(Modifier.size(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(

@@ -318,7 +318,7 @@ private fun StationSheet(
                 verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                com.bpo.gasapp.ui.components.BrandAvatar(brand = station.brand)
+                com.bpo.gasapp.ui.components.BrandLogo(brand = station.brand)
                 androidx.compose.foundation.layout.Column(modifier = androidx.compose.ui.Modifier.weight(1f)) {
                     Text(
                         station.brand,
