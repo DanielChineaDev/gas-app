@@ -383,7 +383,10 @@ private fun PriceMarker(name: String, label: String, isFavorite: Boolean) {
             .padding(5.dp),
         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
     ) {
-        com.bpo.gasapp.ui.components.BrandLogo(brand = name, size = 34)
+        // En los marcadores NO se puede usar carga asíncrona (subcomposición):
+        // el renderizador de marcadores de Maps la captura a bitmap y crashea.
+        // Usamos el avatar de marca sincrono; los logos reales van en la lista.
+        com.bpo.gasapp.ui.components.BrandAvatar(brand = name, size = 34)
         androidx.compose.foundation.layout.Spacer(androidx.compose.ui.Modifier.size(7.dp))
         androidx.compose.foundation.layout.Column {
             androidx.compose.material3.Text(
