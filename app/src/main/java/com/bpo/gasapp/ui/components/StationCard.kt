@@ -82,8 +82,8 @@ fun StationCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1
                 )
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (station.distanceMeters != null) {
+                if (station.distanceMeters != null) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             Icons.Default.NearMe,
                             contentDescription = null,
@@ -97,17 +97,20 @@ fun StationCard(
                         Text(
                             distanceText,
                             style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.secondary
+                            color = MaterialTheme.colorScheme.secondary,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                         )
                     }
-                    if (isCheapest) {
-                        Text(
-                            if (station.distanceMeters != null) "   · Más barata" else "Más barata",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
+                }
+                if (isCheapest) {
+                    Text(
+                        "★ Más barata",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1
+                    )
                 }
             }
 

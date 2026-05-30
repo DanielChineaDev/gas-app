@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,6 +52,38 @@ fun normalizeBrandKey(brand: String): String {
 }
 
 /**
+ * Dominio público de cada marca, para resolver su logo vía Brandfetch.
+ * Son datos públicos (nombres de dominio); no contienen ningún logotipo.
+ */
+private val brandDomains: Map<String, String> = mapOf(
+    "REPSOL" to "repsol.com",
+    "CEPSA" to "cepsa.com",
+    "BP" to "bp.com",
+    "GALP" to "galp.com",
+    "SHELL" to "shell.com",
+    "PETRONOR" to "petronor.com",
+    "DISA" to "disagrupo.es",
+    "AVIA" to "avia.es",
+    "CARREFOUR" to "carrefour.es",
+    "ALCAMPO" to "alcampo.es",
+    "BALLENOIL" to "ballenoil.com",
+    "PLENOIL" to "plenoil.com",
+    "PETROPRIX" to "petroprix.com",
+    "MEROIL" to "meroil.com",
+    "EROSKI" to "eroski.es",
+    "Q8" to "q8.com",
+    "TAMOIL" to "tamoil.com"
+)
+
+/** URL del logo en Brandfetch (vacía si no hay client id o dominio conocido). */
+private fun brandfetchUrl(brand: String, px: Int): String? {
+    val clientId = com.bpo.gasapp.BuildConfig.BRANDFETCH_CLIENT_ID
+    if (clientId.isBlank()) return null
+    val domain = brandDomains[normalizeBrandKey(brand)] ?: return null
+    return "https://cdn.brandfetch.io/$domain/w/$px/h/$px?c=$clientId"
+}
+
+/**
  * Registro marca -> recurso drawable. Vacío por defecto (se usa el avatar de
  * letra). Descomenta y añade tus recursos cuando incluyas los PNG:
  *
@@ -72,24 +105,52 @@ internal val brandLogoRes: Map<String, Int> = emptyMap()
  */
 @Composable
 fun BrandLogo(brand: String, size: Int = 44, modifier: Modifier = Modifier) {
-    val res = brandLogoRes[normalizeBrandKey(brand)]
-    if (res != null) {
-        Box(
-            modifier = modifier
-                .size(size.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(Color.White)
-                .padding((size * 0.14f).dp),
-            contentAlignment = Alignment.Center
-        ) {
+    val localRes = brandLogoRes[normalizeBrandKey(brand)]
+    val remoteUrl = remember(brand) { brandfetchUrl(brand, (size * 2)) }
+
+    when {
+        // 1) Logo local (máxima prioridad, sin red).
+        localRes != null -> LogoFrame(size, modifier) {
             Image(
-                painter = painterResource(res),
+                painter = painterResource(localRes),
                 contentDescription = brand,
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Fit
             )
         }
-    } else {
-        BrandAvatar(brand = brand, size = size, modifier = modifier)
+        // 2) Logo de Brandfetch (cacheado por Coil); avatar mientras carga o si falla.
+        remoteUrl != null -> coil.compose.SubcomposeAsyncImage(
+            model = remoteUrl,
+            contentDescription = brand,
+            contentScale = ContentScale.Fit,
+            loading = { BrandAvatar(brand = brand, size = size) },
+            error = { BrandAvatar(brand = brand, size = size) },
+            success = { state ->
+                LogoFrame(size, Modifier) {
+                    androidx.compose.foundation.Image(
+                        painter = state.painter,
+                        contentDescription = brand,
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Fit
+                    )
+                }
+            },
+            modifier = modifier.size(size.dp)
+        )
+        // 3) Respaldo: avatar de letra de marca (no infractor).
+        else -> BrandAvatar(brand = brand, size = size, modifier = modifier)
     }
+}
+
+/** Contenedor blanco discreto para que el logo no domine sobre la UI de GasApp. */
+@Composable
+private fun LogoFrame(size: Int, modifier: Modifier, content: @Composable () -> Unit) {
+    Box(
+        modifier = modifier
+            .size(size.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.White)
+            .padding((size * 0.14f).dp),
+        contentAlignment = Alignment.Center
+    ) { content() }
 }

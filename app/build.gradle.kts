@@ -32,6 +32,9 @@ val admobBannerUnit: String = localProperties.getProperty("ADMOB_BANNER_UNIT")
 val billingProductId: String = localProperties.getProperty("BILLING_REMOVE_ADS_PRODUCT")
     ?: "remove_ads"
 val coffeeUrl: String = localProperties.getProperty("COFFEE_URL") ?: ""
+// Client ID de Brandfetch (https://brandfetch.com). Vacío = sin logos de red
+// (se usa el avatar de letra de marca como respaldo).
+val brandfetchClientId: String = localProperties.getProperty("BRANDFETCH_CLIENT_ID") ?: ""
 
 val keystoreProperties = Properties().apply {
     val f = rootProject.file("keystore.properties")
@@ -47,7 +50,7 @@ android {
         applicationId = "com.bpo.gasapp"
         minSdk = 24
         targetSdk = 35
-        versionCode = 11
+        versionCode = 12
         versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -61,6 +64,7 @@ android {
         buildConfigField("String", "COFFEE_URL", "\"$coffeeUrl\"")
         val buildDate = SimpleDateFormat("dd/MM/yyyy").format(Date())
         buildConfigField("String", "BUILD_DATE", "\"$buildDate\"")
+        buildConfigField("String", "BRANDFETCH_CLIENT_ID", "\"$brandfetchClientId\"")
     }
 
     signingConfigs {
