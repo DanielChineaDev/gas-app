@@ -103,6 +103,18 @@ class StationRepositoryImpl @Inject constructor(
             }
         }
 
+    override suspend fun recordPriceSnapshot(station: Station) {
+        val now = System.currentTimeMillis()
+        val bucket = now - (now % 3_600_000L) // una muestra por hora (dedup por PK)
+        val entries = station.prices.map { (fuel, price) ->
+            PriceHistoryEntity(station.id, fuel.name, price, bucket)
+        }
+        if (entries.isNotEmpty()) {
+            priceHistoryDao.insertAll(entries)
+            priceHistoryDao.pruneOlderThan(now - HISTORY_RETENTION_MS)
+        }
+    }
+
     override suspend fun toggleFavorite(stationId: String) {
         if (favoriteDao.isFavorite(stationId)) {
             favoriteDao.remove(stationId)
@@ -114,7 +126,7 @@ class StationRepositoryImpl @Inject constructor(
     }
 
     private companion object {
-        const val HISTORY_RETENTION_MS = 90L * 24 * 60 * 60 * 1000
+        const val HISTORY_RETENTION_MS = 365L * 24 * 60 * 60 * 1000
     }
 
     override suspend fun syncFavorites() {

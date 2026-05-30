@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,6 +24,7 @@ import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.LocationOff
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Navigation
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AssistChip
@@ -68,6 +70,7 @@ fun StationListScreen(
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val nearby by viewModel.nearbyStation.collectAsStateWithLifecycle()
     var showFilters by remember { mutableStateOf(false) }
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     val locationPermissions = rememberMultiplePermissionsState(
         listOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -99,19 +102,24 @@ fun StationListScreen(
                 onSortSelect = viewModel::setSortMode
             )
 
-            androidx.compose.animation.AnimatedVisibility(visible = !state.hasLocation) {
+            androidx.compose.animation.AnimatedVisibility(visible = state.isLocating) {
+                LocatingBanner()
+            }
+            androidx.compose.animation.AnimatedVisibility(visible = !state.hasLocation && !state.isLocating) {
                 LocationBanner(onEnable = { locationPermissions.launchMultiplePermissionRequest() })
             }
 
             // ── Contenido principal ─────────────────────────────────────────
-            androidx.compose.material3.pulltorefresh.PullToRefreshBox(
+            // Carga inicial: un único indicador centrado (sin envolver en el
+            // PullToRefreshBox, para no mostrar dos spinners a la vez).
+            if (state.isRefreshing && state.stations.isEmpty()) {
+                CenteredLoader("Buscando gasolineras cerca de ti…")
+            } else androidx.compose.material3.pulltorefresh.PullToRefreshBox(
                 isRefreshing = state.isRefreshing,
                 onRefresh = viewModel::refresh,
                 modifier = Modifier.fillMaxSize()
             ) {
                 when {
-                    state.isRefreshing && state.stations.isEmpty() -> CenteredLoader()
-
                     state.stations.isEmpty() ->
                         CenteredMessage(state.error ?: "No hay gasolineras con estos filtros.")
 
@@ -129,7 +137,12 @@ fun StationListScreen(
                                     station = cheapest,
                                     fuel = state.filters.fuel,
                                     zoneAverage = state.zoneAverage,
-                                    onClick = { onStationClick(cheapest.id) }
+                                    onClick = { onStationClick(cheapest.id) },
+                                    onNavigate = {
+                                        com.bpo.gasapp.ui.components.openNavigation(
+                                            context, cheapest.latitude, cheapest.longitude
+                                        )
+                                    }
                                 )
                             }
                         }
@@ -142,6 +155,7 @@ fun StationListScreen(
                                     fuel = state.filters.fuel,
                                     isCheapest = index == 0 && station.priceOf(state.filters.fuel) != null,
                                     zoneAverage = state.zoneAverage,
+                                    consumptionL100 = state.consumption,
                                     onClick = { onStationClick(station.id) },
                                     onFavorite = { viewModel.toggleFavorite(station.id) },
                                     modifier = Modifier.animateItem()
@@ -348,7 +362,8 @@ internal fun HeroCard(
     station: com.bpo.gasapp.domain.model.Station,
     fuel: FuelType,
     zoneAverage: Double?,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onNavigate: () -> Unit = {}
 ) {
     val price = station.priceOf(fuel) ?: return
     val saving = zoneAverage?.let { it - price }
@@ -398,6 +413,22 @@ internal fun HeroCard(
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             }
+
+            Spacer(Modifier.height(6.dp))
+            // Acción principal destacada: ir directamente a la más barata.
+            androidx.compose.material3.Button(
+                onClick = onNavigate,
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.onPrimary,
+                    contentColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Icon(Icons.Default.Navigation, contentDescription = null)
+                Spacer(Modifier.size(8.dp))
+                Text("Cómo llegar", fontWeight = androidx.compose.ui.text.font.FontWeight.Bold)
+            }
         }
     }
 }
@@ -421,9 +452,41 @@ internal fun LocationBanner(onEnable: () -> Unit) {
 // ─── Estados de la lista ──────────────────────────────────────────────────────
 
 @Composable
-internal fun CenteredLoader() {
+internal fun CenteredLoader(message: String? = null) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator()
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            CircularProgressIndicator()
+            if (message != null) {
+                Text(
+                    message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+/** Indicador discreto mientras se obtiene la ubicación del usuario. */
+@Composable
+internal fun LocatingBanner() {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.size(16.dp),
+            strokeWidth = 2.dp
+        )
+        Text(
+            "Cargando ubicación…",
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 

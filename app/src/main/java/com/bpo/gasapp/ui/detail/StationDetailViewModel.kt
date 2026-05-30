@@ -51,6 +51,8 @@ class StationDetailViewModel @Inject constructor(
                 isLoading = false,
                 notFound = station == null
             )
+            // Construye el histórico propio: registra los precios actuales al abrir.
+            station?.let { repository.recordPriceSnapshot(it) }
         }
     }
 

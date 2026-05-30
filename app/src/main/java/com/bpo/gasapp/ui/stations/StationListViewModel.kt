@@ -34,17 +34,32 @@ data class StationListUiState(
     val zoneAverage: Double? = null,
     val hasLocation: Boolean = false,
     val isRefreshing: Boolean = false,
+    val isLocating: Boolean = false,
+    /** Consumo (L/100 km) del vehículo seleccionado o el valor por defecto. */
+    val consumption: Double = DEFAULT_CONSUMPTION,
     val error: String? = null
 )
+
+/** Consumo medio estándar cuando no hay vehículo configurado. */
+const val DEFAULT_CONSUMPTION = 6.5
 
 @HiltViewModel
 class StationListViewModel @Inject constructor(
     private val repository: StationRepository,
     private val locationProvider: LocationProvider,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val vehicleRepository: com.bpo.gasapp.domain.repository.VehicleRepository
 ) : ViewModel() {
 
     private val filters = MutableStateFlow(StationFilters())
+    private val isLocating = MutableStateFlow(false)
+    private val consumptionFlow = combine(
+        settingsRepository.settings,
+        vehicleRepository.observeVehicles()
+    ) { s, vehicles ->
+        val v = s.selectedVehicleId?.let { id -> vehicles.firstOrNull { it.id == id } }
+        v?.consumption?.takeIf { it > 0 } ?: DEFAULT_CONSUMPTION
+    }
     private val searchQuery = MutableStateFlow("")
     private val location = MutableStateFlow<UserLocation?>(null)
     private val isRefreshing = MutableStateFlow(false)
@@ -69,14 +84,24 @@ class StationListViewModel @Inject constructor(
 
     private val filtersAndSearch = combine(filters, searchQuery) { f, q -> f to q }
 
+    private data class ListStatus(
+        val refreshing: Boolean,
+        val error: String?,
+        val locating: Boolean,
+        val consumption: Double
+    )
+
+    private val statusFlow = combine(isRefreshing, error, isLocating, consumptionFlow) { r, e, l, c ->
+        ListStatus(r, e, l, c)
+    }
+
     val uiState: StateFlow<StationListUiState> =
         combine(
             repository.observeStations(),
             filtersAndSearch,
             location,
-            isRefreshing,
-            error
-        ) { stations, (filters, query), userLocation, refreshing, err ->
+            statusFlow
+        ) { stations, (filters, query), userLocation, status ->
             val withDistance = if (userLocation != null) {
                 stations.map {
                     it.copy(distanceMeters = distanceMeters(userLocation, it.latitude, it.longitude))
@@ -144,8 +169,10 @@ class StationListViewModel @Inject constructor(
                 availableBrands = availableBrands,
                 zoneAverage = zoneAverage,
                 hasLocation = userLocation != null,
-                isRefreshing = refreshing,
-                error = err
+                isRefreshing = status.refreshing,
+                isLocating = status.locating,
+                consumption = status.consumption,
+                error = status.error
             )
         }.flowOn(Dispatchers.Default).stateIn(
             scope = viewModelScope,
@@ -184,7 +211,11 @@ class StationListViewModel @Inject constructor(
     }
 
     fun refreshLocation() {
-        viewModelScope.launch { location.value = locationProvider.currentLocation() }
+        viewModelScope.launch {
+            isLocating.value = true
+            location.value = locationProvider.currentLocation()
+            isLocating.value = false
+        }
     }
 
     fun toggleFavorite(stationId: String) {

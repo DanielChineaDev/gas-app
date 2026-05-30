@@ -21,6 +21,8 @@ import androidx.compose.material.icons.filled.DirectionsCarFilled
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Savings
 import androidx.compose.material.icons.filled.Settings
@@ -184,6 +186,26 @@ fun ProfileScreen(
                     Text("Cerrar sesión")
                 }
             }
+
+            HorizontalDivider()
+
+            AboutSection(
+                onOpenUrl = { url ->
+                    val intent = android.content.Intent(
+                        android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url)
+                    )
+                    kotlin.runCatching { context.startActivity(intent) }
+                },
+                onEmail = {
+                    val intent = android.content.Intent(
+                        android.content.Intent.ACTION_SENDTO,
+                        android.net.Uri.parse("mailto:info@gasapp.cloud")
+                    )
+                    kotlin.runCatching { context.startActivity(intent) }
+                }
+            )
+
+            VersionFooter()
         }
     }
 
@@ -360,4 +382,105 @@ private fun MenuRow(
             .alpha(if (locked) 0.6f else 1f)
             .clickable(onClick = onClick)
     )
+}
+
+@Composable
+private fun AboutSection(onOpenUrl: (String) -> Unit, onEmail: () -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
+        Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(
+                Modifier.fillMaxWidth().clickable { expanded = !expanded },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    "Sobre la aplicación",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Icon(
+                    if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                    contentDescription = null
+                )
+            }
+
+            if (expanded) {
+                AboutBlock(
+                    "Qué es GasApp",
+                    "GasApp es una app para encontrar las gasolineras más baratas de España en " +
+                        "tiempo real, comparar precios de carburante y ahorrar en cada repostaje."
+                )
+                AboutBlock(
+                    "Objetivo",
+                    "Ayudarte a pagar menos por el combustible mostrándote, de forma rápida y clara, " +
+                        "dónde repostar más barato cerca de ti."
+                )
+                AboutBlock(
+                    "Qué te aporta",
+                    "• Mapa y lista con precios oficiales actualizados a diario.\n" +
+                        "• Favoritas sincronizadas y alertas de bajada de precio.\n" +
+                        "• Estadísticas de gasto, consumo y ahorro.\n" +
+                        "• Histórico de precios, modo coche y mucho más."
+                )
+                AboutBlock(
+                    "Desarrollador",
+                    "Desarrollado por Jose Daniel Chinea (BPO Studios)."
+                )
+                AboutBlock(
+                    "Datos y privacidad",
+                    "Los precios proceden de fuentes oficiales públicas. La ubicación se usa solo para " +
+                        "mostrarte gasolineras cercanas y no se rastrea en segundo plano. La cuenta es " +
+                        "opcional y no vendemos tus datos."
+                )
+
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    androidx.compose.material3.TextButton(onClick = { onOpenUrl("https://landing.gasapp.cloud") }) {
+                        Text("Sitio web")
+                    }
+                    androidx.compose.material3.TextButton(onClick = { onOpenUrl("https://landing.gasapp.cloud/privacy.html") }) {
+                        Text("Privacidad")
+                    }
+                    androidx.compose.material3.TextButton(onClick = onEmail) {
+                        Text("Contacto")
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AboutBlock(title: String, body: String) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(title, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+        Text(
+            body,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun VersionFooter() {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        Text(
+            "GasApp ${com.bpo.gasapp.BuildConfig.VERSION_NAME} (build ${com.bpo.gasapp.BuildConfig.VERSION_CODE})",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Text(
+            "Compilada el ${com.bpo.gasapp.BuildConfig.BUILD_DATE}",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
 }

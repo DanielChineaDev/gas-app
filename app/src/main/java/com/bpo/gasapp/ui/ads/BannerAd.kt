@@ -1,5 +1,6 @@
 package com.bpo.gasapp.ui.ads
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
@@ -27,14 +28,21 @@ fun BannerAd(modifier: Modifier = Modifier) {
     if (isPremium) return
 
     val context = LocalContext.current
-    AndroidView(
-        modifier = modifier.fillMaxWidth().height(50.dp),
-        factory = {
-            AdView(context).apply {
-                setAdSize(AdSize.BANNER)
-                adUnitId = BuildConfig.ADMOB_BANNER_UNIT
-                loadAd(AdRequest.Builder().build())
+    androidx.compose.foundation.layout.Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(60.dp)
+            .background(androidx.compose.material3.MaterialTheme.colorScheme.surface),
+        contentAlignment = androidx.compose.ui.Alignment.Center
+    ) {
+        AndroidView(
+            factory = {
+                AdView(context).apply {
+                    setAdSize(AdSize.BANNER)
+                    adUnitId = BuildConfig.ADMOB_BANNER_UNIT
+                    loadAd(AdRequest.Builder().build())
+                }
             }
-        }
-    )
+        )
+    }
 }

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -146,7 +147,7 @@ fun MapScreen(
                 },
                 clusterContent = { cluster -> ClusterBubble(cluster.size) },
                 clusterItemContent = { item ->
-                    PriceMarker(item.markerLabel, item.station.brand, item.station.isFavorite)
+                    PriceMarker(item.station.brand, item.markerLabel, item.station.isFavorite)
                 }
             )
         }
@@ -370,47 +371,53 @@ private fun StationSheet(
 }
 
 @Composable
-private fun PriceMarker(label: String, brand: String, isFavorite: Boolean) {
-    androidx.compose.foundation.layout.Row(
+private fun PriceMarker(name: String, label: String, isFavorite: Boolean) {
+    // Píldora compacta: nombre arriba (pequeño) y precio debajo (destacado).
+    androidx.compose.foundation.layout.Column(
         modifier = androidx.compose.ui.Modifier
             .background(
                 color = androidx.compose.ui.graphics.Color.White,
-                shape = androidx.compose.foundation.shape.RoundedCornerShape(50)
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
             )
-            .padding(start = 4.dp, end = 10.dp, top = 4.dp, bottom = 4.dp),
-        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+            .widthIn(max = 132.dp)
+            .padding(horizontal = 9.dp, vertical = 4.dp),
+        horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
     ) {
-        androidx.compose.foundation.layout.Box(
-            modifier = androidx.compose.ui.Modifier
-                .size(22.dp)
-                .background(
-                    color = com.bpo.gasapp.ui.components.brandColor(brand),
-                    shape = androidx.compose.foundation.shape.CircleShape
-                ),
-            contentAlignment = androidx.compose.ui.Alignment.Center
-        ) {
+        androidx.compose.foundation.layout.Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            androidx.compose.foundation.layout.Box(
+                modifier = androidx.compose.ui.Modifier
+                    .size(8.dp)
+                    .background(
+                        color = com.bpo.gasapp.ui.components.brandColor(name),
+                        shape = androidx.compose.foundation.shape.CircleShape
+                    )
+            )
+            androidx.compose.foundation.layout.Spacer(androidx.compose.ui.Modifier.size(4.dp))
             androidx.compose.material3.Text(
-                text = brand.take(1).uppercase().ifBlank { "?" },
-                color = androidx.compose.ui.graphics.Color.White,
+                text = name,
+                color = androidx.compose.ui.graphics.Color(0xFF5A6A7A),
                 style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
             )
         }
-        androidx.compose.foundation.layout.Spacer(androidx.compose.ui.Modifier.size(6.dp))
-        androidx.compose.material3.Text(
-            text = label,
-            color = androidx.compose.ui.graphics.Color.Black,
-            style = androidx.compose.material3.MaterialTheme.typography.labelMedium,
-            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
-        )
-        if (isFavorite) {
-            androidx.compose.foundation.layout.Spacer(androidx.compose.ui.Modifier.size(4.dp))
-            Icon(
-                imageVector = Icons.Default.Favorite,
-                contentDescription = "Favorita",
-                tint = FavoriteRed,
-                modifier = androidx.compose.ui.Modifier.size(14.dp)
+        androidx.compose.foundation.layout.Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            androidx.compose.material3.Text(
+                text = label,
+                color = androidx.compose.ui.graphics.Color.Black,
+                style = androidx.compose.material3.MaterialTheme.typography.titleSmall,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
             )
+            if (isFavorite) {
+                androidx.compose.foundation.layout.Spacer(androidx.compose.ui.Modifier.size(4.dp))
+                Icon(
+                    imageVector = Icons.Default.Favorite,
+                    contentDescription = "Favorita",
+                    tint = FavoriteRed,
+                    modifier = androidx.compose.ui.Modifier.size(13.dp)
+                )
+            }
         }
     }
 }

@@ -2,65 +2,88 @@ package com.bpo.gasapp.ui.detail
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.unit.dp
 import com.bpo.gasapp.domain.model.FuelType
 import com.bpo.gasapp.domain.model.PricePoint
 
-private val fuelColors = mapOf(
+/** Colores por carburante para las series del gráfico. */
+internal val fuelColors = mapOf(
     FuelType.GASOLINA_95 to Color(0xFF2E7D32),
     FuelType.GASOLINA_98 to Color(0xFF1565C0),
     FuelType.DIESEL to Color(0xFFEF6C00),
-    FuelType.DIESEL_PREMIUM to Color(0xFF6A1B9A)
+    FuelType.DIESEL_PREMIUM to Color(0xFF6A1B9A),
+    FuelType.GLP to Color(0xFF00897B),
+    FuelType.GNC to Color(0xFF5D4037),
+    FuelType.GNL to Color(0xFF0097A7),
+    FuelType.HIDROGENO to Color(0xFFC2185B),
+    FuelType.ADBLUE to Color(0xFF546E7A)
 )
 
-@OptIn(ExperimentalLayoutApi::class)
+/**
+ * Gráfico de líneas del histórico de precios. El padre filtra por rango temporal
+ * y pasa los carburantes activos (para comparar varios a la vez).
+ */
 @Composable
-fun PriceHistoryChart(history: List<PricePoint>, modifier: Modifier = Modifier) {
-    val byFuel = history.groupBy { it.fuel }
+fun PriceHistoryChart(
+    history: List<PricePoint>,
+    enabledFuels: Set<FuelType>,
+    modifier: Modifier = Modifier
+) {
+    val byFuel = history
+        .filter { it.fuel in enabledFuels }
+        .groupBy { it.fuel }
         .mapValues { (_, points) -> points.sortedBy { it.timestamp } }
         .filterValues { it.size >= 2 }
 
     if (byFuel.isEmpty()) {
         Text(
-            "Aún no hay suficiente historial. Se registra cada vez que se actualizan los precios de tus favoritas.",
+            "Aún no hay suficiente histórico para este rango. Se va construyendo cada vez " +
+                "que abres la gasolinera o se actualizan los precios.",
             style = MaterialTheme.typography.bodySmall,
             modifier = modifier
         )
         return
     }
 
-    val allPrices = byFuel.values.flatten().map { it.price }
-    val minPrice = allPrices.min()
-    val maxPrice = allPrices.max()
+    val flat = byFuel.values.flatten()
+    val minPrice = flat.minOf { it.price }
+    val maxPrice = flat.maxOf { it.price }
     val range = (maxPrice - minPrice).takeIf { it > 0.0001 } ?: 1.0
-    val minTime = byFuel.values.flatten().minOf { it.timestamp }
-    val maxTime = byFuel.values.flatten().maxOf { it.timestamp }
+    val minTime = flat.minOf { it.timestamp }
+    val maxTime = flat.maxOf { it.timestamp }
     val timeSpan = (maxTime - minTime).takeIf { it > 0 } ?: 1L
+
+    val grid = MaterialTheme.colorScheme.outlineVariant
 
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Canvas(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(160.dp)
+                .height(180.dp)
+                .clip(RoundedCornerShape(12.dp))
                 .background(MaterialTheme.colorScheme.surfaceVariant)
-                .padding(8.dp)
+                .padding(10.dp)
         ) {
+            // Líneas de referencia horizontales.
+            val lines = 3
+            for (i in 0..lines) {
+                val y = size.height * i / lines
+                drawLine(grid, Offset(0f, y), Offset(size.width, y), strokeWidth = 1f)
+            }
             byFuel.forEach { (fuel, points) ->
                 val color = fuelColors[fuel] ?: Color.Gray
                 val offsets = points.map { point ->
@@ -73,31 +96,18 @@ fun PriceHistoryChart(history: List<PricePoint>, modifier: Modifier = Modifier) 
                         color = color,
                         start = offsets[i],
                         end = offsets[i + 1],
-                        strokeWidth = 4f
+                        strokeWidth = 5f,
+                        cap = StrokeCap.Round
                     )
                 }
-            }
-        }
-
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            byFuel.keys.forEach { fuel ->
-                Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                    Box(
-                        Modifier
-                            .size(10.dp)
-                            .background(fuelColors[fuel] ?: Color.Gray)
-                    )
-                    Text(
-                        "  ${fuel.label}",
-                        style = MaterialTheme.typography.labelSmall
-                    )
-                }
+                offsets.forEach { drawCircle(color, radius = 4f, center = it) }
             }
         }
 
         Text(
-            "Rango: %.3f € – %.3f €".format(minPrice, maxPrice),
-            style = MaterialTheme.typography.labelSmall
+            "Mín. %.3f €  ·  Máx. %.3f €".format(minPrice, maxPrice),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }

@@ -137,12 +137,9 @@ private fun StationDetailContent(
             }
         }
 
-        Card(Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Historial de precios", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                PriceHistoryChart(history)
-            }
-        }
+        ServicesSection(station)
+
+        PriceHistorySection(history)
 
         Button(onClick = onNavigate, modifier = Modifier.fillMaxWidth()) {
             Icon(Icons.Default.Navigation, contentDescription = null)
@@ -208,6 +205,79 @@ private fun StationPhoto(station: Station) {
             contentScale = androidx.compose.ui.layout.ContentScale.Crop,
             modifier = Modifier.fillMaxWidth().height(180.dp)
         )
+    }
+}
+
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+private fun ServicesSection(station: Station) {
+    val services = buildList {
+        if (station.priceOf(FuelType.ADBLUE) != null) add("AdBlue")
+        if (station.priceOf(FuelType.GLP) != null) add("GLP / Autogás")
+        if (station.priceOf(FuelType.GNC) != null) add("Gas natural (GNC)")
+        if (station.priceOf(FuelType.GNL) != null) add("Gas natural (GNL)")
+        if (station.priceOf(FuelType.HIDROGENO) != null) add("Hidrógeno")
+        if (station.schedule.uppercase().replace(" ", "").contains("24H")) add("Abierto 24 h")
+    }
+    if (services.isEmpty()) return
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Servicios", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                services.forEach { s ->
+                    androidx.compose.material3.AssistChip(onClick = {}, label = { Text(s) })
+                }
+            }
+        }
+    }
+}
+
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+private fun PriceHistorySection(history: List<com.bpo.gasapp.domain.model.PricePoint>) {
+    val ranges = listOf(7 to "7 días", 30 to "30 días", 90 to "90 días", 365 to "1 año")
+    var rangeDays by androidx.compose.runtime.remember { androidx.compose.runtime.mutableIntStateOf(30) }
+    val presentFuels = androidx.compose.runtime.remember(history) { history.map { it.fuel }.distinct() }
+    var enabled by androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf<Set<FuelType>>(emptySet()) }
+    androidx.compose.runtime.LaunchedEffect(presentFuels) {
+        if (enabled.isEmpty() && presentFuels.isNotEmpty()) enabled = presentFuels.toSet()
+    }
+    val cutoff = System.currentTimeMillis() - rangeDays.toLong() * 86_400_000L
+    val filtered = history.filter { it.timestamp >= cutoff }
+
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("Histórico de precios", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                ranges.forEach { (d, label) ->
+                    androidx.compose.material3.FilterChip(
+                        selected = rangeDays == d,
+                        onClick = { rangeDays = d },
+                        label = { Text(label) }
+                    )
+                }
+            }
+            if (presentFuels.size > 1) {
+                androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    presentFuels.forEach { f ->
+                        androidx.compose.material3.FilterChip(
+                            selected = f in enabled,
+                            onClick = { enabled = if (f in enabled) enabled - f else enabled + f },
+                            label = { Text(f.label) },
+                            leadingIcon = {
+                                Box(
+                                    Modifier
+                                        .size(10.dp)
+                                        .clip(androidx.compose.foundation.shape.CircleShape)
+                                        .background(fuelColors[f] ?: androidx.compose.ui.graphics.Color.Gray)
+                                )
+                            }
+                        )
+                    }
+                }
+            }
+            PriceHistoryChart(filtered, enabled)
+        }
     }
 }
 

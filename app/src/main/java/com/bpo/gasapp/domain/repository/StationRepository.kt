@@ -28,8 +28,11 @@ interface StationRepository {
 
     suspend fun getStation(id: String): Station?
 
-    /** Recorded price history (favorites only), oldest first. */
+    /** Recorded price history, oldest first. */
     fun observePriceHistory(stationId: String): Flow<List<PricePoint>>
+
+    /** Saves a history point with the station's current prices (one per hour). */
+    suspend fun recordPriceSnapshot(station: Station)
 
     /** Fetches fresh data from the official API and replaces the local cache. */
     suspend fun refresh(): Result<Unit>

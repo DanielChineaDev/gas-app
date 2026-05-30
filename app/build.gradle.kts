@@ -1,3 +1,5 @@
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Properties
 
 plugins {
@@ -45,7 +47,7 @@ android {
         applicationId = "com.bpo.gasapp"
         minSdk = 24
         targetSdk = 35
-        versionCode = 9
+        versionCode = 10
         versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -57,6 +59,8 @@ android {
         buildConfigField("String", "ADMOB_BANNER_UNIT", "\"$admobBannerUnit\"")
         buildConfigField("String", "BILLING_REMOVE_ADS_PRODUCT", "\"$billingProductId\"")
         buildConfigField("String", "COFFEE_URL", "\"$coffeeUrl\"")
+        val buildDate = SimpleDateFormat("dd/MM/yyyy").format(Date())
+        buildConfigField("String", "BUILD_DATE", "\"$buildDate\"")
     }
 
     signingConfigs {

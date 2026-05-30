@@ -46,9 +46,14 @@ fun StationCard(
     onFavorite: () -> Unit,
     isCheapest: Boolean = false,
     zoneAverage: Double? = null,
+    consumptionL100: Double = com.bpo.gasapp.ui.stations.DEFAULT_CONSUMPTION,
     modifier: Modifier = Modifier
 ) {
     val price = station.priceOf(fuel)
+    // Coste estimado de ida hasta la gasolinera con el consumo del vehículo.
+    val tripCost: Double? = station.distanceMeters?.let { meters ->
+        price?.let { p -> (meters / 1000.0) * (consumptionL100 / 100.0) * p }
+    }
     Card(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
@@ -85,8 +90,12 @@ fun StationCard(
                             modifier = Modifier.size(14.dp),
                             tint = MaterialTheme.colorScheme.secondary
                         )
+                        val distanceText = buildString {
+                            append("  ${formatDistance(station.distanceMeters)}")
+                            if (tripCost != null) append(" • %.2f € para llegar".format(tripCost))
+                        }
                         Text(
-                            "  ${formatDistance(station.distanceMeters)}",
+                            distanceText,
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.secondary
                         )
