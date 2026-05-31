@@ -51,7 +51,7 @@ android {
         applicationId = "com.bpo.gasapp"
         minSdk = 24
         targetSdk = 35
-        versionCode = 16
+        versionCode = 17
         versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -88,6 +88,11 @@ android {
                 "proguard-rules.pro"
             )
             signingConfig = if (hasReleaseKeystore) signingConfigs.getByName("release") else null
+            // Incluye los símbolos de depuración nativos en el AAB para que Play
+            // pueda simbolizar los ANR y fallos del código nativo (Maps, ML Kit…).
+            ndk {
+                debugSymbolLevel = "FULL"
+            }
         }
     }
     compileOptions {
