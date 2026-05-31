@@ -15,6 +15,16 @@ service cloud.firestore {
       match /favorites/{stationId} {
         allow read, write: if request.auth != null && request.auth.uid == uid;
       }
+
+      // Repostajes del usuario (origen de su ahorro, logros y estadísticas).
+      match /refuels/{refuelId} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
+
+      // Vehículos del usuario.
+      match /vehicles/{vehicleId} {
+        allow read, write: if request.auth != null && request.auth.uid == uid;
+      }
     }
 
     // Reseñas de gasolineras: lectura pública, escritura solo del propio usuario

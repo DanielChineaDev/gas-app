@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Logo de GasApp para el splash (API SplashScreen, Android 12+).
+  Reproduce el logotipo real de la app: una gota blanca con un hueco circular,
+  igual que el icono del launcher. Lienzo de 288dp; el contenido se mantiene
+  dentro de la zona segura central para que no lo recorte la máscara del sistema.
+  fillType="evenOdd" hace que el círculo interior quede como hueco (deja ver el
+  azul del fondo del splash).
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="288dp"
+    android:height="288dp"
+    android:viewportWidth="288"
+    android:viewportHeight="288">
+    <group
+        android:scaleX="9"
+        android:scaleY="9"
+        android:translateX="36"
+        android:translateY="36">
+        <path
+            android:fillColor="#FFFFFF"
+            android:fillType="evenOdd"
+            android:pathData="M12,2 C6.67,6.55 4,10.48 4,13.8 C4,18.78 7.8,22 12,22 C16.2,22 20,18.78 20,13.8 C20,10.48 17.33,6.55 12,2 Z M8.8,14.7 a3.2,3.2 0 1,0 6.4,0 a3.2,3.2 0 1,0 -6.4,0 Z" />
+    </group>
+</vector>

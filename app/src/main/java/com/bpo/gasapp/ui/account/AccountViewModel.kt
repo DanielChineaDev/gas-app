@@ -10,6 +10,7 @@ import com.bpo.gasapp.domain.repository.AuthRepository
 import com.bpo.gasapp.domain.repository.FavoriteMergeStrategy
 import com.bpo.gasapp.domain.repository.RefuelRepository
 import com.bpo.gasapp.domain.repository.StationRepository
+import com.bpo.gasapp.domain.repository.VehicleRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,6 +38,7 @@ class AccountViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val stationRepository: StationRepository,
     private val refuelRepository: RefuelRepository,
+    private val vehicleRepository: VehicleRepository,
     private val settingsRepository: SettingsRepository,
     private val profileRemote: ProfileRemoteDataSource
 ) : ViewModel() {
@@ -52,6 +54,18 @@ class AccountViewModel @Inject constructor(
         authRepository.authState
             .onEach { _user.value = it }
             .launchIn(viewModelScope)
+
+        // Si ya hay sesión iniciada al abrir la app, sincroniza repostajes y
+        // vehículos del perfil (ahorro, logros y estadísticas derivan de ellos).
+        if (authRepository.currentUser() != null) {
+            viewModelScope.launch { syncProfileData() }
+        }
+    }
+
+    /** Fusiona repostajes y vehículos del perfil (vehículos primero por el enlace). */
+    private suspend fun syncProfileData() {
+        runCatching { vehicleRepository.sync() }
+        runCatching { refuelRepository.sync() }
     }
 
     val favoritesCount: StateFlow<Int> = stationRepository.observeFavorites()
@@ -117,6 +131,7 @@ class AccountViewModel @Inject constructor(
      */
     private suspend fun onLoggedIn() {
         syncDefaultFuel()
+        syncProfileData()
         val localCount = stationRepository.localFavoritesCount()
         if (localCount > 0) {
             _pendingLocalFavorites.value = localCount

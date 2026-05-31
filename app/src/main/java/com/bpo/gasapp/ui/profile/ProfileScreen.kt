@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ListAlt
@@ -21,8 +22,7 @@ import androidx.compose.material.icons.filled.DirectionsCarFilled
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Savings
 import androidx.compose.material.icons.filled.Settings
@@ -48,6 +48,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -67,6 +69,7 @@ fun ProfileScreen(
     onAchievements: () -> Unit,
     onPremium: () -> Unit,
     onSettings: () -> Unit,
+    onAbout: () -> Unit,
     viewModel: AccountViewModel = hiltViewModel()
 ) {
     val user by viewModel.user.collectAsStateWithLifecycle()
@@ -154,6 +157,8 @@ fun ProfileScreen(
                 )
             }
 
+            RemoveAdsCard(onClick = onPremium)
+
             SupportCard(
                 onKofi = {
                     val intent = android.content.Intent(
@@ -176,8 +181,8 @@ fun ProfileScreen(
             MenuRow(Icons.Default.DirectionsCarFilled, "Mis vehículos", onClick = onVehicles)
             MenuRow(Icons.Default.Savings, "Modo ahorro", onClick = onSaving)
             MenuRow(Icons.Default.DirectionsCar, "Modo coche", onClick = onCarMode)
-            MenuRow(Icons.Default.Star, "Quitar anuncios", onClick = onPremium)
             MenuRow(Icons.Default.Settings, "Ajustes", onClick = onSettings)
+            MenuRow(Icons.Default.Info, "Sobre la aplicación", onClick = onAbout)
 
             HorizontalDivider()
 
@@ -188,22 +193,6 @@ fun ProfileScreen(
             }
 
             HorizontalDivider()
-
-            AboutSection(
-                onOpenUrl = { url ->
-                    val intent = android.content.Intent(
-                        android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url)
-                    )
-                    kotlin.runCatching { context.startActivity(intent) }
-                },
-                onEmail = {
-                    val intent = android.content.Intent(
-                        android.content.Intent.ACTION_SENDTO,
-                        android.net.Uri.parse("mailto:info@gasapp.cloud")
-                    )
-                    kotlin.runCatching { context.startActivity(intent) }
-                }
-            )
 
             VersionFooter()
         }
@@ -312,32 +301,84 @@ private fun StatCard(
 
 @Composable
 private fun SupportCard(onKofi: () -> Unit) {
+    GradientBanner(
+        emoji = "☕",
+        title = "Apoya el desarrollo",
+        subtitle = "GasApp es gratuita. Invítame a un café en Ko-fi para seguir mejorándola.",
+        trailingIcon = Icons.Default.Favorite,
+        gradient = listOf(Color(0xFFFF6F61), Color(0xFFFFA726)),
+        onClick = onKofi
+    )
+}
+
+@Composable
+private fun RemoveAdsCard(onClick: () -> Unit) {
+    GradientBanner(
+        emoji = "✨",
+        title = "Quitar anuncios",
+        subtitle = "Disfruta de GasApp sin anuncios con un único pago y apoya el proyecto.",
+        trailingIcon = Icons.Default.Star,
+        gradient = listOf(Color(0xFF1976D2), Color(0xFFF57C00)),
+        onClick = onClick
+    )
+}
+
+/**
+ * Banner destacado con fondo en degradado, insignia con emoji y texto en blanco.
+ * Cada banner del perfil usa un degradado distinto para no repetir colores.
+ */
+@Composable
+private fun GradientBanner(
+    emoji: String,
+    title: String,
+    subtitle: String,
+    trailingIcon: ImageVector,
+    gradient: List<androidx.compose.ui.graphics.Color>,
+    onClick: () -> Unit
+) {
     Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onKofi),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Row(
-            Modifier.fillMaxWidth().padding(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Brush.linearGradient(gradient))
+                .padding(18.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text("☕", style = MaterialTheme.typography.headlineMedium)
-            Column(Modifier.weight(1f)) {
+            Box(
+                modifier = Modifier
+                    .size(46.dp)
+                    .clip(CircleShape)
+                    .background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.22f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(emoji, style = MaterialTheme.typography.headlineSmall)
+            }
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
                 Text(
-                    "Apoya el desarrollo",
+                    title,
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = androidx.compose.ui.graphics.Color.White
                 )
                 Text(
-                    "GasApp es gratuita. Invítame a un café en Ko-fi para seguir mejorándola.",
+                    subtitle,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.92f)
                 )
             }
             Icon(
-                Icons.Default.Favorite,
+                trailingIcon,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary
+                tint = androidx.compose.ui.graphics.Color.White
             )
         }
     }
@@ -385,109 +426,11 @@ private fun MenuRow(
 }
 
 @Composable
-private fun AboutSection(onOpenUrl: (String) -> Unit, onEmail: () -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Row(
-                Modifier.fillMaxWidth().clickable { expanded = !expanded },
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    "Sobre la aplicación",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Icon(
-                    if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                    contentDescription = null
-                )
-            }
-
-            if (expanded) {
-                AboutBlock(
-                    "Qué es GasApp",
-                    "GasApp es una app para encontrar las gasolineras más baratas de España en " +
-                        "tiempo real, comparar precios de carburante y ahorrar en cada repostaje."
-                )
-                AboutBlock(
-                    "Objetivo",
-                    "Ayudarte a pagar menos por el combustible mostrándote, de forma rápida y clara, " +
-                        "dónde repostar más barato cerca de ti."
-                )
-                AboutBlock(
-                    "Qué te aporta",
-                    "• Mapa y lista con precios oficiales actualizados a diario.\n" +
-                        "• Favoritas sincronizadas y alertas de bajada de precio.\n" +
-                        "• Estadísticas de gasto, consumo y ahorro.\n" +
-                        "• Histórico de precios, modo coche y mucho más."
-                )
-                AboutBlock(
-                    "Desarrollador",
-                    "Desarrollado por Jose Daniel Chinea (BPO Studios)."
-                )
-                AboutBlock(
-                    "Datos y privacidad",
-                    "Los precios proceden de fuentes oficiales públicas. La ubicación se usa solo para " +
-                        "mostrarte gasolineras cercanas y no se rastrea en segundo plano. La cuenta es " +
-                        "opcional y no vendemos tus datos."
-                )
-                AboutBlock(
-                    "Aviso legal",
-                    "Los nombres, marcas y logotipos pertenecen a sus respectivos propietarios y se " +
-                        "muestran únicamente como identificador de cada estación de servicio. Esta " +
-                        "aplicación no está afiliada, asociada ni respaldada oficialmente por ninguna " +
-                        "compañía petrolera."
-                )
-
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    androidx.compose.material3.TextButton(onClick = { onOpenUrl("https://landing.gasapp.cloud") }) {
-                        Text("Sitio web")
-                    }
-                    androidx.compose.material3.TextButton(onClick = { onOpenUrl("https://landing.gasapp.cloud/privacy.html") }) {
-                        Text("Privacidad")
-                    }
-                    androidx.compose.material3.TextButton(onClick = onEmail) {
-                        Text("Contacto")
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun AboutBlock(title: String, body: String) {
-    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-        Text(title, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
-        Text(
-            body,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}
-
-@Composable
 private fun VersionFooter() {
-    Column(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp)
-    ) {
-        Text(
-            "GasApp ${com.bpo.gasapp.BuildConfig.VERSION_NAME} (build ${com.bpo.gasapp.BuildConfig.VERSION_CODE})",
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Text(
-            "Compilada el ${com.bpo.gasapp.BuildConfig.BUILD_DATE}",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
+    Text(
+        "Versión ${com.bpo.gasapp.BuildConfig.VERSION_NAME}",
+        style = MaterialTheme.typography.labelMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+    )
 }

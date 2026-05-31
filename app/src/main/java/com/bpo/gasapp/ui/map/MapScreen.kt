@@ -420,23 +420,21 @@ private fun PriceMarker(
                 overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                 modifier = androidx.compose.ui.Modifier.widthIn(max = 116.dp)
             )
-            androidx.compose.foundation.layout.Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-                androidx.compose.material3.Text(
-                    text = "$label €",
-                    color = androidx.compose.ui.graphics.Color.Black,
-                    style = androidx.compose.material3.MaterialTheme.typography.titleSmall,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
-                )
-                if (isFavorite) {
-                    androidx.compose.foundation.layout.Spacer(androidx.compose.ui.Modifier.size(4.dp))
-                    Icon(
-                        imageVector = Icons.Default.Favorite,
-                        contentDescription = "Favorita",
-                        tint = FavoriteRed,
-                        modifier = androidx.compose.ui.Modifier.size(12.dp)
-                    )
-                }
-            }
+            androidx.compose.material3.Text(
+                text = "$label €",
+                color = androidx.compose.ui.graphics.Color.Black,
+                style = androidx.compose.material3.MaterialTheme.typography.titleSmall,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+            )
+        }
+        if (isFavorite) {
+            androidx.compose.foundation.layout.Spacer(androidx.compose.ui.Modifier.size(6.dp))
+            Icon(
+                imageVector = Icons.Default.Favorite,
+                contentDescription = "Favorita",
+                tint = FavoriteRed,
+                modifier = androidx.compose.ui.Modifier.size(34.dp)
+            )
         }
     }
 }

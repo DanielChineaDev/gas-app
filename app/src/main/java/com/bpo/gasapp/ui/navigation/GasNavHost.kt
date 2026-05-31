@@ -62,6 +62,7 @@ object Routes {
     const val VEHICLES = "vehicles"
     const val ACHIEVEMENTS = "achievements"
     const val PREMIUM = "premium"
+    const val ABOUT = "about"
 }
 
 private enum class TopLevel(val route: String, val label: String, val icon: ImageVector) {
@@ -150,8 +151,12 @@ fun GasNavHost(navController: NavHostController = rememberNavController()) {
                     onVehicles = { navController.navigate(Routes.VEHICLES) },
                     onAchievements = { navController.navigate(Routes.ACHIEVEMENTS) },
                     onPremium = { navController.navigate(Routes.PREMIUM) },
-                    onSettings = { navController.navigate(Routes.SETTINGS) }
+                    onSettings = { navController.navigate(Routes.SETTINGS) },
+                    onAbout = { navController.navigate(Routes.ABOUT) }
                 )
+            }
+            composable(Routes.ABOUT) {
+                com.bpo.gasapp.ui.profile.AboutScreen(onBack = { navController.popBackStack() })
             }
             composable(Routes.PREMIUM) {
                 com.bpo.gasapp.ui.premium.PremiumScreen(onBack = { navController.popBackStack() })

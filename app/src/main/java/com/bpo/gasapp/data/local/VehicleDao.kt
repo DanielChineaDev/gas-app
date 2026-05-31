@@ -14,6 +14,12 @@ interface VehicleDao {
     @Query("SELECT * FROM vehicles ORDER BY name")
     fun observeAll(): Flow<List<VehicleEntity>>
 
+    @Query("SELECT * FROM vehicles")
+    suspend fun getAll(): List<VehicleEntity>
+
+    @Query("UPDATE vehicles SET syncId = :syncId WHERE id = :id")
+    suspend fun setSyncId(id: Long, syncId: String)
+
     @Insert
     suspend fun insert(vehicle: VehicleEntity): Long
 

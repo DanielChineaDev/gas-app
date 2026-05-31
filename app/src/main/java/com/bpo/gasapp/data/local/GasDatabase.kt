@@ -16,7 +16,7 @@ import com.bpo.gasapp.data.local.entity.VehicleEntity
         RefuelEntity::class,
         VehicleEntity::class
     ],
-    version = 6,
+    version = 7,
     exportSchema = true
 )
 abstract class GasDatabase : RoomDatabase() {

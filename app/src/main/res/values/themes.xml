@@ -4,7 +4,7 @@
 
     <style name="Theme.GasApp.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/brand_blue</item>
-        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_logo</item>
         <item name="postSplashScreenTheme">@style/Theme.GasApp</item>
     </style>
 </resources>

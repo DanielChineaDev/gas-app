@@ -10,6 +10,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.google.services)
+    alias(libs.plugins.androidx.baselineprofile)
 }
 
 ksp {
@@ -165,6 +166,11 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
+
+    // Instala el Baseline Profile generado en el arranque (acelera cold start).
+    implementation(libs.androidx.profileinstaller)
+    // Perfil generado por el módulo :baselineprofile.
+    baselineProfile(project(":baselineprofile"))
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

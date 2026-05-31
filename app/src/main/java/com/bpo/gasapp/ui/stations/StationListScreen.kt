@@ -112,8 +112,8 @@ fun StationListScreen(
             // ── Contenido principal ─────────────────────────────────────────
             // Carga inicial: un único indicador centrado (sin envolver en el
             // PullToRefreshBox, para no mostrar dos spinners a la vez).
-            if (state.isRefreshing && state.stations.isEmpty()) {
-                CenteredLoader("Buscando gasolineras cerca de ti…")
+            if ((state.isRefreshing || state.isLocating) && state.stations.isEmpty()) {
+                com.bpo.gasapp.ui.components.StationListSkeleton(Modifier.fillMaxSize())
             } else androidx.compose.material3.pulltorefresh.PullToRefreshBox(
                 isRefreshing = state.isRefreshing,
                 onRefresh = viewModel::refresh,

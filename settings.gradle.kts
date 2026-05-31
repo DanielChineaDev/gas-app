@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "GasApp"
 include(":app")
+include(":baselineprofile")

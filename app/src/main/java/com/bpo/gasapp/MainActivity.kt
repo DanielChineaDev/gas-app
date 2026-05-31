@@ -31,6 +31,16 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         val splash = installSplashScreen()
+        // Salida elegante: el icono se desvanece y crece ligeramente.
+        splash.setOnExitAnimationListener { provider ->
+            provider.view.animate()
+                .alpha(0f)
+                .scaleX(1.06f)
+                .scaleY(1.06f)
+                .setDuration(280L)
+                .withEndAction { provider.remove() }
+                .start()
+        }
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         // Consentimiento de privacidad (RGPD/UMP) antes de inicializar AdMob.

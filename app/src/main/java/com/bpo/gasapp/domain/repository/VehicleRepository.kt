@@ -10,4 +10,7 @@ interface VehicleRepository {
     suspend fun add(name: String, fuel: FuelType, consumption: Double): Long
     suspend fun update(vehicle: Vehicle)
     suspend fun delete(vehicle: Vehicle)
+
+    /** Sincroniza los vehículos locales con la nube del perfil (fusión en ambos sentidos). */
+    suspend fun sync()
 }

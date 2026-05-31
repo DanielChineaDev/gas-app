@@ -124,7 +124,10 @@ fun FavoritesScreen(
                 modifier = Modifier.fillMaxSize()
             ) {
                 when {
-                    state.isRefreshing && state.stations.isEmpty() -> CenteredLoader()
+                    state.isRefreshing && state.stations.isEmpty() ->
+                        com.bpo.gasapp.ui.components.StationListSkeleton(
+                            Modifier.fillMaxSize(), showHero = false
+                        )
 
                     !hasAnyFavorites -> EmptyFavorites()
 
